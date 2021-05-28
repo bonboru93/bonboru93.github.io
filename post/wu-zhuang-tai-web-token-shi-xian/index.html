@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>无状态web token实现 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="需求
+要实现microservice甚至serverless，就要把业务线拆解成小任务，如果用传统的session方式当user token，在各个小任务间来回同步会非常麻烦，统一管理session、处理session保持都需要性能开销。
+..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">无状态web token实现</h2>
+            <div class="post-date">2019-11-28</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/wu-zhuang-tai-web-token-shi-xian.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="需求">需求</h1>
+<p>要实现microservice甚至serverless，就要把业务线拆解成小任务，如果用传统的session方式当user token，在各个小任务间来回同步会非常麻烦，统一管理session、处理session保持都需要性能开销。</p>
+<p>思来想去，只能是把token保存在client侧，各任务独立验证。这就需要一种安全的在client侧保存token的加密方法。</p>
+<h1 id="解法">解法</h1>
+<p>首先找到一个json web token的东西。</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/serverless-web-token/jwt.png" alt="" loading="lazy"></figure>
+<p>想法非常简单，第1段是加密方式，第2段是内容，第3段是签名。</p>
+<p>但是jwt的签名采用的并不是严谨的非对称加密的签名，而是通过在hash函数中加自定义密文（加盐，salt，secret）的方式，加密方式和内容只是简单经过base64编码而已。</p>
+<p>这种把摘要函数直接作为签名的方式安全性比较低，加密方式也允许client进行更改，看着着实不太踏实。</p>
+<h1 id="改进">改进</h1>
+<p>想法也很简单，就是非对称加密那一套，把jwt中的摘要签名改为真正的非对称加密签名即可。python实现：</p>
+<h3 id="keygenpy">keygen.py</h3>
+<pre><code class="language-python">from ecdsa import SigningKey
+ 
+ 
+sk = SigningKey.generate()
+vk = sk.get_verifying_key()
+with open(&quot;private.pem&quot;, &quot;wb&quot;) as f:
+    f.write(sk.to_pem())
+with open(&quot;public.pem&quot;, &quot;wb&quot;) as f:
+    f.write(vk.to_pem())
+</code></pre>
+<h3 id="serverpy">server.py</h3>
+<pre><code class="language-python">from flask import Flask
+from flask import request
+from flask import make_response
+app = Flask(__name__)
+ 
+from ecdsa import SigningKey
+with open('private.pem','rb') as f:
+    priv_key = SigningKey.from_pem(f.read())
+ 
+@app.route(&quot;/login&quot;, methods=['POST'])
+def login():
+    uid = request.form['uid']
+    # TODO: verify uname and passwd
+    expire = str(int(time.time() + 10))
+    sign = priv_key.sign((uid + str(expire)).encode('ascii')).hex()
+    res = make_response()
+    res.set_cookie('uid', uid)
+    res.set_cookie('expire', expire)
+    res.set_cookie('sign', sign)
+    return res
+ 
+from ecdsa import VerifyingKey
+with open('public.pem','rb') as f:
+    pub_key = VerifyingKey.from_pem(f.read())
+ 
+@app.route('/info')
+def info():
+    try:
+        uid = request.cookies.get('uid')
+        expire = request.cookies.get('expire')
+        assert int(expire) &gt; time.time()
+        sign = bytes.fromhex(request.cookies.get('sign'))
+        pub_key.verify(sign, (uid + str(expire)).encode('ascii'))
+        return 'OK'
+    except:
+        return 'FAIL'
+</code></pre>
+<p>其实还可以只向client写sign，解密后用ECC做校验。</p>
+<h1 id="2020-update">2020 update</h1>
+<p>发现jwt除了用HMAC也可以用RSA了，那就不用手撸了<br>
+<img src="https://bonboru93.github.io/post-images/serverless-web-token/jwt_rsa.png" alt="" loading="lazy"></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/kpatch-shi-yong-fang-fa/">
+                  <h3 class="post-title">
+                    kpatch使用方法
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

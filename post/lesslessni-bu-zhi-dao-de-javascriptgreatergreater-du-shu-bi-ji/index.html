@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《你不知道的JavaScript》读书笔记 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+
+理解promise要摆脱传统的a = function_name()就是把计算结果赋值给a的思维定势，因为在js中存在一种典型的编码模式就是这个函数返回的不是最终的计算结果，而是包装了具体的计算函数的promise对象，你需要再手动执行..." />
+    <meta name="keywords" content="读书笔记,基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《你不知道的JavaScript》读书笔记</h2>
+            <div class="post-date">2020-05-19</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/lesslessni-bu-zhi-dao-de-javascriptgreatergreater-du-shu-bi-ji.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <ol>
+<li>
+<p>理解promise要摆脱传统的a = function_name()就是把计算结果赋值给a的思维定势，因为在js中存在一种典型的编码模式就是这个函数返回的不是最终的计算结果，而是包装了具体的计算函数的promise对象，你需要再手动执行这个promise，并给他绑定回调，你才能最后得到结果，并且这种编码模式的函数名通常起的就像是一个直接返回结果的函数一样，比如a = sum(1, 2)，容易引起误解。要记得a现在就是一个promise对象，所谓promise就是承诺，就是现在还没做，将来再做的东西。这个promise对象里除了有具体执行的函数，还有函数执行成功或失败后的去向。可以将promise理解为一个盒子，盒子有一个入口用于输入数据，有两个出口分别表示执行成功后下一步做什么和执行失败后下一步怎么处理，在盒子的两个出口之后再接下一个盒子就能把任务串起来。盒子只有被串起来，里面包的函数才会真的执行，否则就只是单纯的返回一个promise对象。如果要把promise中的函数执行结果赋值给a，那么应该写：a = await sum(1, 2)，await顾名思义就是我等这个promise执行完，然后再把结果赋给a，这样就等同于同步的代码，省去了写回调函数的麻烦。python中也有类似的promise.join方法，但是要注意python默认是写在同一个位置的多个join语句共享一个join点，比如写【a = join task1; b = join task2; c = join task3】，那么在python中，abc同时执行；而在js中，这么写的话abc顺序执行。三个task如果都是延时1s的话，这么写python一共花1s，js一共3s，要同时join多个task，js必须显式调用await all。</p>
+</li>
+<li>
+<p>函数通过上下文选用参数比从参数列表中选用参数更好</p>
+</li>
+<li>
+<p>bind是返回一个硬绑定了this的新函数</p>
+</li>
+<li>
+<p>变量作用域分词法作用域和调用栈作用域，词法作用域只看变量在代码中的位置是被包在哪些大括号里面，层层往外找。而调用栈作用域则是顺着调用关系从被调函数到调用函数的链找。以前接触过的作用域都是词法作用域，而且是不完全的词法作用域，比如包函数的大括号里是一个作用域，而包if语句的大括号则不是。es6中用let代替var，实现了所有大括号包起来的都是一个作用域。虽然js对于变量也没有采用调用栈作用域，但js中this关键字的绑定却是运行时决定的，也就是this的指向不服从词法作用域的规则，而是按调用关系来的。</p>
+</li>
+<li>
+<p>具体this绑定规则：<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/this.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>访问对象内容有属性访问和键值访问，二者等价，key会首先被转换成字符串，所以a[3]和a[&quot;3&quot;]是一样的，属性名也可以进行计算</p>
+</li>
+<li>
+<p>属性有读写配置，可以被删除</p>
+</li>
+<li>
+<p>对象可以被冻结、密封</p>
+</li>
+<li>
+<p>类描述了一种数据组织形式：数据的具体内容和操作内容的方法，例如字符串类型应当包含具体的字符和操作字符的方法（求长度、输出、截取）</p>
+</li>
+<li>
+<p>混入：js中实现伪继承的方法，js中并没有类，只有对象，通过把父对象的成员复制到子对象中去来实现类似继承的行为模式。显式混入就是遍历父对象中所有的方法，将方法的引用复制到子对象中去，隐式复制就是在子对象中通过call()来重新绑定this所指向的上下文，从而在子对象的上下文环境中调用父对象中的方法，也间接的实现了继承。<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/mixin.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>js的核心是基于对象的，而不是基于类的。虽然也可以像其他oop语言一样通过构造函数调用，直接操作prototype等行为实现模仿类，但相比直接操作对象来的繁琐，直接操作原型的写法也不优雅。<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/obj1.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/js-learn/obj2.png" alt="" loading="lazy"><br>
+上述范例代码说的是前端设计中常见的一个Button的设计方法。如果是基于类的思维，那么我们容易想到所有的UI元素都来自于一个叫widget的基类，其中有该元素的大小，以及一个渲染方法。然后button类继承了widget基类，重写渲染方法，添加响应点击的onclick方法。基于这种思路，在js中我们先写一个widget函数作为“构造函数”，每个函数都有一个prototype指向的原型，这里就可以把他理解为“类”，而后我们向这个widget类添加方法render。这样widget类就做好了。用同样的方法先做出button的构造函数，而后为了让button类“继承”widget类，我们先新建一个空对象，将该空对象的__proto__指向widget类（也就是widget.prototype），再将button.prototype重新指向该对象，这就是button类了，之后就可以根据需要在button类中添加button独有的方法了。在“实例化”对象时和oop语言一致，使用new关键字。这套方法利用了js中this的绑定规则来做出“构造函数”，而后直接操作了原型链来实现类的继承行为。非常不优雅。</p>
+<p>右边是直接采用对象思想来实现相同功能的代码。我们先新建了一个widget对象，其中有初始化和插入页面的两个通用方法，用同样的方法做出button对象，并通过object.create将button对象的__proto__指向widget实现“继承”。为了避免通过硬绑定的方式调用父对象中的方法，这里一个显著区别于一般oop语言的地方是，子对象中的方法尽量和父对象的方法不重名，而在一般oop语言中，我们会特意将子类中相同功能的代码写成和父类相同的名字以实现覆盖和重写。在“实例化”对象时，有别于使用new关键字，这里我们依然使用了object.create来构建完整的原型链。</p>
+</li>
+<li>
+<p>彻底理解prototype和__proto__</p>
+</li>
+</ol>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/js-learn/proto.png" alt="" loading="lazy"></figure>
+<ol start="13">
+<li>使用chrome进行调试</li>
+</ol>
+<p><img src="https://bonboru93.github.io/post-images/js-learn/inspect1.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/js-learn/inspect2.png" alt="" loading="lazy"></p>
+<ol start="14">
+<li>
+<p>promise的then总是会添加到时间队列，即使promise已经决议<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/resolve.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>同一个请求的链式promise<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/chain1.png" alt="" loading="lazy"><br>
+vs<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/chain2.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/js-learn/chain3.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>async、await的前身：promise+迭代器的组合<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/yield2.png" alt="" loading="lazy"><br>
+实际上这里迭代器内部的yield和外部的then的resolve分支就演化成了后来的await操作<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/yield3.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>在单页app中可能出现复用同一个web woker的情况，可以利用端口加以区分，使用闭包隔离数据<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/webworker.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>尾调用优化：函数调用在最末尾的话可以直接复用原有的栈</p>
+</li>
+<li>
+<p>作者的asynquence库：天然的异步思想是js代码中最具有特色的部分，但回调函数带来的回调地狱写法使得代码的可读性非常差。从es6开始引入的promise让人眼前一亮，再配合es7中的async和await关键字实现了非常容易且自然的以符合人脑逻辑的同步思维撰写异步代码的需求。但首先promise的理解还是比较困难的，所以在读这套书的时候我先跳到了中卷看promise然后写了第一条心得。其次是即便理解了promise的设计，在使用中也会遇到一些问题：</p>
+<p>1.我想用promise串起整个任务的各个流程，就像小时候做时间规划一样，有起始点、有分叉点、有join点、然后有终点。写好流程链之后注入数据，完成任务。但promise链的写法使你很容易把处理逻辑和输入数据混写在一起，join点的操作在语意上没有很好的统一，如then和promise.join就有所不同，这使得需要非常仔细的阅读代码才能整理绘制出任务的流程。</p>
+<p>2.通常在一串处理流程中如果中途出错那么大概是无法完成整个任务的，也就是如果有异常，那么我们通常希望的处理方法是退出整个处理链。而原生promise包装的处理函数总是接受resolve和reject两个回调，这使得你很可能写出忽略某个错误而继续执行处理链的错误代码。</p>
+<p>3.直接使用原生的promise链，你无法得到整条链的实例，你只能得到一个一个具体的promise，这在某些想要获得调用链的全局视野的情况下可能会有用。</p>
+<p>本书作者的asynquence库解决了上述的问题</p>
+<ol>
+<li>首先，调用链得以非常清晰的呈现：<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/aq1.png" alt="" loading="lazy"></li>
+<li>支持同步和异步的混写<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/aq2.png" alt="" loading="lazy"></li>
+<li>调用链回调中只有done，通过done.fail触发错误，出错之后调用链中断<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/aq3.png" alt="" loading="lazy"></li>
+<li>清晰的语意化join<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/aq3.png" alt="" loading="lazy"></li>
+<li>支持复杂join条件<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/join.png" alt="" loading="lazy"></li>
+<li>处理非逻辑错误的方法：在调用链中直接使用try<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/tr1.png" alt="" loading="lazy"></li>
+<li>嵌入传统的promise对象<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/depromise.png" alt="" loading="lazy"></li>
+</ol>
+</li>
+<li>
+<p>真假值<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/tf.png" alt="" loading="lazy"><br>
+注意数组、对象总是true，包括空数组、空对象</p>
+</li>
+<li>
+<p>相等关系判断<br>
+<img src="https://bonboru93.github.io/post-images/js-learn/equ1.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/js-learn/equ2.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/js-learn/equ3.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/js-learn/equ4.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/js-learn/equ5.png" alt="" loading="lazy"></p>
+</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/L05iEcRPF/" class="tag">
+                    读书笔记
+                  </a>
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/dns-fen-liu-dai-li/">
+                  <h3 class="post-title">
+                    DNS分流代理
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

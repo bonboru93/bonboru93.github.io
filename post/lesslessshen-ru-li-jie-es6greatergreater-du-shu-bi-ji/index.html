@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《深入理解ES6》读书笔记 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+
+const的作用域和let相同
+
+
+即使在同一作用域内，声明前也不能使用
+
+
+
+由于var声明的变量不遵守作用域规定，因此不要将循环变量声明为var，尤其是有闭包的情况下
+
+
+const和几种循环
+
+
+
+var与全局变量
+
+
+
+var、..." />
+    <meta name="keywords" content="读书笔记,基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《深入理解ES6》读书笔记</h2>
+            <div class="post-date">2020-07-24</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/lesslessshen-ru-li-jie-es6greatergreater-du-shu-bi-ji.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <ol>
+<li>
+<p>const的作用域和let相同</p>
+</li>
+<li>
+<p>即使在同一作用域内，声明前也不能使用<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/death.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>由于var声明的变量不遵守作用域规定，因此不要将循环变量声明为var，尤其是有闭包的情况下</p>
+</li>
+<li>
+<p>const和几种循环<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/const_loop.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>var与全局变量<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/var1.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>var、let、const的最佳实践<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/block.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>object.is()<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/obj_is.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>原型可以修改<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/proto.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>各种解构</p>
+<p>a. <img src="https://bonboru93.github.io/post-images/es6-learn/de1.png" alt="" loading="lazy"><br>
+b. <img src="https://bonboru93.github.io/post-images/es6-learn/de2.png" alt="" loading="lazy"><br>
+c. 这种还是别用了<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/de3.png" alt="" loading="lazy"><br>
+d. 有点mongodb的嵌套查询的感觉了<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/de4.png" alt="" loading="lazy"><br>
+e. 数组<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/de51.png" alt="" loading="lazy"></p>
+<p>f. 剩余项<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/de6.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>HomeObject<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/home.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/home2.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/home3.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>字符串unicode<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/unicode.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>字符串查找<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/string.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>arguments总是原始值<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/arguments.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>函数构造器<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/functor1.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/functor2.png" alt="" loading="lazy"><br>
+开始有反射的意思了</p>
+</li>
+<li>
+<p>检查函数是否被作为构造函数进行调用<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/es56.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>块级函数<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/block_fun.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/block_fun2.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>箭头函数基本属性<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/arrow.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>箭头函数带外层函数的arguments闭包<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/arguments_closure.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>使用ArrayBuffer和view来使用在v8堆内存之外的空间，和Buffer一样<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/view.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/view2.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>类型化数组</p>
+<p>从ArrayBuffer创建：<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/arrbuf.png" alt="" loading="lazy"><br>
+从普通数组创建：<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/regular_arr.png" alt="" loading="lazy"><br>
+和普通数组的公用方法：<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/method3.png" alt="" loading="lazy"><br>
+和普通数组的区别：<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/diff1.png" alt="" loading="lazy"><br>
+由于类型化数组大小固定，因此下列方法都没有：<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/no_fun.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>代理和反射</p>
+<p>a. 创建代理<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/proxy.png" alt="" loading="lazy"><br>
+b. set陷阱函数<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/trap.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/trap2.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/trap3.png" alt="" loading="lazy"><br>
+c. get陷阱函数</p>
+<p>……</p>
+</li>
+<li>
+<p>模块的基本概念<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/module.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>import的js文件中的代码只会被执行一次<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/import.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>import和export必须在顶层<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/export.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>import是真正的引用传递，这是为数不多的可以看到引用传递的地方<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/import_name.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>export和export default可以同时存在<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/export_default.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>模块虽然有自己的作用域，但这并不意味着模块不可以修改全局作用域中已有的对象<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/global.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/global2.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>符号，可代替字符串<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/symbol.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>使用可计算属性名<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/calc_para.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>使用Symbo.for<br>
+<img src="https://bonboru93.github.io/post-images/es6-learn/symbol_for.png" alt="" loading="lazy"><br>
+为了节省空间？</p>
+</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/L05iEcRPF/" class="tag">
+                    读书笔记
+                  </a>
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/node-de-event-he-stream/">
+                  <h3 class="post-title">
+                    Node的event和stream
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

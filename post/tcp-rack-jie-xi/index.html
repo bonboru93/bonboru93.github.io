@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>TCP RACK 解析 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+
+基本思想
+
+
+什么是乱序度
+乱序就是按123的顺序发包，收到的ACK却不是按123的顺序到来，也就是存在后发先到或者说先发后到的情况。如果现在已知后发的包先到了，那先发的包哪里去了呢？
+有两种情况，一是丢了，二是因为包在传输过程中被重新..." />
+    <meta name="keywords" content="协议栈,基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">TCP RACK 解析</h2>
+            <div class="post-date">2019-08-11</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/tcp-rack-jie-xi.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <ul>
+<li>
+<p>基本思想</p>
+<ol>
+<li>
+<p>什么是乱序度</p>
+<p>乱序就是按123的顺序发包，收到的ACK却不是按123的顺序到来，也就是存在<em>后发先到</em>或者说先发后到的情况。如果现在已知后发的包先到了，那先发的包哪里去了呢？</p>
+<p>有两种情况，一是丢了，二是因为包在传输过程中被重新排序了，要再过一会才到。这两种情况的处理逻辑是相反的，</p>
+<p>a.如果包已经丢了，那么就要赶快重传。</p>
+<p>b.如果只是被重排了，那么再等一等他就会到，不需要重传。</p>
+<p>所以在出现先发后到的情况时要再选择新的表征来区分这两种情况，以便下一步采取不同的处理方法。这时候【乱序度】的概念就产生了，我们认为网络对数据包的重排是有限度的，当我们探测到乱序时，如果在限度内，认为是重排引起的；如果超过了限度，那么就认为确实是丢包了。乱序度的引入既能帮我们进行快速重传，又能通过动态变化的限度值来过滤网络原生的重排行为产生的噪声。</p>
+</li>
+<li>
+<p>从包序到时序</p>
+<p>乱序度首先应用在包序上，协议栈根据收到的SACK信息计算乱序度，再比较窗口内的空洞情况和乱序度来决定重传多少个空洞。</p>
+<p>RACK则把乱序重传的概念从包序扩展到了时序。根据包序决定重传时，只能从第一个空洞开始往后重传，如果重传包又丢了，那从包序的角度上无法探知。如果从时间的维度上衡量发包的乱序，那么就能够很好的区分一个包的多次重传，一次重传后没有回音还可以再进行重传。这对包序重传的方法是一个补充。</p>
+</li>
+<li>
+<p>时序乱序度怎么算</p>
+<p>将最近一个收到的ACK包称为RACK（recent ack），遍历发送队列（for packet in rx_packet_list），计算</p>
+<pre><code> 乱序度 = Δ1 + Δ2
+
+ Δ1 = RACK.send_time - packet.send_time
+
+ Δ2 = now - RACK.recv_time
+</code></pre>
+<p>对比乱序度和预设限度值，决定是否重传这个packet。</p>
+<p>如何理解：乱序也就是先发后到、后发先到，计算两个包的乱序程度，就是【先发了多少 → Δ1】和【目前至少已经后到了多少 → Δ2】的加总。<br>
+https://tools.ietf.org/html/draft-ietf-tcpm-rack-01 中给出的公式：</p>
+<p>(RACK.xmit_ts - Packet.xmit_ts) + (now - RACK.ack_ts) &gt; RACK.reo_wnd</p>
+<p>也是上述含义。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>具体实现<br>
+<img src="https://bonboru93.github.io/post-images/rack-intro/intro.png" alt="" loading="lazy"></p>
+<ol>
+<li>
+<p>在4.4内核的RACK实现中，只有在收到ACK时才会执行上述逻辑，因此检查点就是收到RACK的时间，因此Δ2 = 0，只需要判断Δ1是否大于限度就可以，patch的代码也十分简单：<br>
+<img src="https://bonboru93.github.io/post-images/rack-intro/k44.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>4.14内核的改进</p>
+<p>4.4内核这样写的话等于是漏掉了乱序度概念中的后半部分，如果先后两个包形成一个突发，也就是Δ1非常小，那么在用后发包为RACK检查先发包时它就会被放过。如果此时协议栈受窗口大小或上层应用限制，得不到更多的ACK了，那么先发包就只能等待RTO了。</p>
+<p>4.14内核在判断时添加了一个reo定时器，也就是如果判断一个包相对RACK的乱序度还不足以立即重传它，那么可以将不足的部分视为余量，由于RACK是时间维度上的乱序，那么余量就会发生在将来。安装一个余量大小的定时器，就可以在将来再对这个包进行检查，如果检查时这个包还在发送队列中，那么就可以重传它了。</p>
+<p>这样不仅补完了RACK的概念，也很好的解决了当没有更多的ACK到来时如何对已经检查过但当时还不满足重传条件的包再次进行检查。这实际上也起到了代替er、thin stream等快速重传的判断逻辑的作用，因为这些逻辑应对的也是窗口受限，得不到新ACK来触发对旧包的检查时的情况。所以在上了RACK之后，time_to_recover()中的逻辑仅剩下一个包乱序的经典条件，其他全部去掉了，非常优雅。</p>
+<p>由于这些改进，4.14的代码复杂了些：<br>
+<img src="https://bonboru93.github.io/post-images/rack-intro/k414.png" alt="" loading="lazy"><br>
+乍一看怪怪的，我们来变换一下，如上图所示，elapsed就是检查点时间和包发送时间的差值，推导：</p>
+<pre><code>   Δ1 + Δ2 &gt; reo
+
+ =&gt; elapsed - rtt &gt; reo（看图）
+
+ =&gt; rtt + reo - elapsed &lt; 0
+
+ =&gt; remaining &lt; 0
+</code></pre>
+<p>这也就和代码中的算式一致了。<br>
+<img src="https://bonboru93.github.io/post-images/rack-intro/remain.png" alt="" loading="lazy"><br>
+如果remaining大于0，也就是还有余量<br>
+<img src="https://bonboru93.github.io/post-images/rack-intro/timer.png" alt="" loading="lazy"><br>
+那么就安装上定时器，将来再做检查。</p>
+</li>
+</ol>
+</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/R1zWwOM1V/" class="tag">
+                    协议栈
+                  </a>
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/websocket-proxy-over-cdn/">
+                  <h3 class="post-title">
+                    Websocket Proxy over CDN
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Nginx setsockopt 折腾记录 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="获取socket fd
+nginx工作在7层，没有公开的api可以获取到底层的socket fd，但从nginx_lua源码中可以发现resty.core.base库中有一个函数get_request可以得到一个nginx的结构体ngx_h..." />
+    <meta name="keywords" content="协议栈,基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Nginx setsockopt 折腾记录</h2>
+            <div class="post-date">2020-04-27</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/nginx-setsockopt-zhe-teng-ji-lu.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="获取socket-fd">获取socket fd</h2>
+<p>nginx工作在7层，没有公开的api可以获取到底层的socket fd，但从nginx_lua源码中可以发现resty.core.base库中有一个函数get_request可以得到一个nginx的结构体ngx_http_request_t。</p>
+<p>继续阅读nginx的源码可以发现原始的socket藏在该结构体中的ngx_connection_t中的fd字段中。</p>
+<h2 id="调用setsockopt">调用setsockopt</h2>
+<p>这是最头疼的地方，setsockopt是c代码，所以必须要用c先编一个动态库，然后在lua中通过ffi来调用。</p>
+<p>虽然setsockopt只需要fd，但在lua中通过get_request只能得到一个nginx的结构体ngx_http_request_t指针r，真正的fd路径是r→connection→fd，但lua无法操作c的数据结构，只能把指针r直接丢给c，那么要在c中解析nginx的数据结构就必须要有nginx的源码。</p>
+<p>这里第一个念头当然是偷懒，是不是可以直接阅读nginx源码，找到fd字段的相对偏移，然后硬算呢？<br>
+<img src="https://bonboru93.github.io/post-images/ngx-setsockopt/offset.png" alt="" loading="lazy"></p>
+<p>看起来是可以，第一步的偏移量是32位的signature+32位的padding，之后的64位转成指针后，再加3个64位的指针，然后就是我们要的fd了。</p>
+<p>不过这么干实在是没有扩展性，而且既然已经读了nginx源码了，那还是想办法把nginx中的头文件include进来，我们目前只需要各个结构体的长度而已，不需要调用nginx的函数。</p>
+<p>首先查看openresty的版本号，除了最后一位是openresty自己的版本号以外，前面3位复用了nginx的版本号。<br>
+<img src="https://bonboru93.github.io/post-images/ngx-setsockopt/version.png" alt="" loading="lazy"><br>
+然后下载对应版本的nginx源码，然后configure，尝试找出nginx源码中的所有的头文件。<br>
+<img src="https://bonboru93.github.io/post-images/ngx-setsockopt/make1.png" alt="" loading="lazy"></p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/ngx-setsockopt/make2.png" alt="" loading="lazy"></figure>
+<p>顺着Makefile的指示找下去就发现了这个ALL_INCS的宏，大概率把这几个文件夹拉过来就完事了。</p>
+<p>在我们自己的c库中include &lt;ngx_http.h&gt;，然后用下面的Makefile：</p>
+<figure data-type="image" tabindex="2"><img src="https://bonboru93.github.io/post-images/ngx-setsockopt/make3.png" alt="" loading="lazy"></figure>
+<p>编译通过。</p>
+<p>拿到nginx数据结构以后接下来就好办了，setsockopt就是一句话的事：<br>
+<img src="https://bonboru93.github.io/post-images/ngx-setsockopt/set.png" alt="" loading="lazy"><br>
+编译成so文件后，export LD_LIBRARY_PATH，接着让lua加载：<br>
+<img src="https://bonboru93.github.io/post-images/ngx-setsockopt/lua.png" alt="" loading="lazy"><br>
+注意ffi.load的时候会补上lib前缀。</p>
+<p>测试通过～</p>
+<h2 id="补充">补充</h2>
+<p>以上的做法能解决我们的在nginx中调用setsockopt的基本需求，但是显然不是什么正规做法，如果我们接下来需要调用nginx中的其他函数就麻烦了。</p>
+<p>所以还是查资料尝试编写nginx模块。根据nginx doc，模块可以在配置文件中通过load_module指令动态加载，我们就来写一个通过setsockopt设置自定义参数的动态模块。</p>
+<p>Follow这个手册：<a href="https://www.nginx.com/blog/compiling-dynamic-modules-nginx-plus/">https://www.nginx.com/blog/compiling-dynamic-modules-nginx-plus/</a><br>
+和这个极简的模块：<a href="https://github.com/api7/lua-var-nginx-module/blob/master/src/ngx_http_lua_var_module.c">https://github.com/api7/lua-var-nginx-module/blob/master/src/ngx_http_lua_var_module.c</a>，<br>
+写好config和hello world代码后编译：</p>
+<figure data-type="image" tabindex="3"><img src="https://bonboru93.github.io/post-images/ngx-setsockopt/hello.png" alt="" loading="lazy"></figure>
+<p>但加载时出现了not binary compatible的错误，查找相关issue多数说的是nginx的源码和安装的版本不同，但这个我已经检查过了。</p>
+<p>想到我们实际使用的是openresty带的nginx，在编译的时候嵌入了luajit的库，所以configure文件不同可能导致了二进制不兼容的错误。</p>
+<p>重新拉openresty的源码，查看其提供的configure文件，发现他会把add-dynamic-module参数透传到他带的nginx的configure中去，所以我们先在openresty的源码目录中执行上述configure，然后cd到目录下的build/nginx-1.15.8中再执行make modules。</p>
+<p>实测这样得到的so动态库可以被正确加载。</p>
+<p>接下来解决最后一个问题，lua到c的传参。我们的参数字符串在lua中生成。查找资料，如果在c中不需要修改lua虚拟机中的内存，直接在指针前加const即可不做任何显式的转换和内存复制直接传参。</p>
+<p><img src="https://bonboru93.github.io/post-images/ngx-setsockopt/code1.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/ngx-setsockopt/code2.png" alt="" loading="lazy"></p>
+<p>这里还有一个问题需要注意，ffi.cdef不能在每次请求时都执行，否则很快stackoverflow。正确的做法是包一个模块。</p>
+<p>完。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/R1zWwOM1V/" class="tag">
+                    协议栈
+                  </a>
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/react-xue-xi-bi-ji/">
+                  <h3 class="post-title">
+                    React学习笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

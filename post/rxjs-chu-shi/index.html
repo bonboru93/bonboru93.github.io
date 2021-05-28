@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>rxjs初识 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+
+反应式宣言
+https://zhuanlan.zhihu.com/p/96603046
+不是什么特别新奇的概念了，基本上还是观察者模式、事件循环、异步任务那一套东西。
+
+
+
+rxjs文档
+https://cn.rx.js.org/man..." />
+    <meta name="keywords" content="js,基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">rxjs初识</h2>
+            <div class="post-date">2020-06-19</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/rxjs-chu-shi.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <ol>
+<li>
+<p>反应式宣言<br>
+<a href="https://zhuanlan.zhihu.com/p/96603046">https://zhuanlan.zhihu.com/p/96603046</a><br>
+不是什么特别新奇的概念了，基本上还是观察者模式、事件循环、异步任务那一套东西。<br>
+<img src="https://bonboru93.github.io/post-images/rxjs-snap/reactive.svg" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>rxjs文档<br>
+<a href="https://cn.rx.js.org/manual/overview.html">https://cn.rx.js.org/manual/overview.html</a><br>
+看了一下，大部分场景用原生promise也可以cover，整流可以用lodash的debounce，多播可以用event emitter做，中间操作自己写也行。</p>
+<p>next的设计和迭代器类似，这个用原生promise不好弄，promise只能决议一次，不过涉及到多次resolve的场景不多，能想到的有socket（单一入口，用callback也能看）、UI事件（有框架，不用操心）。</p>
+<p>能看得出来这是个很重的框架，暂时没想到非用不可的地方。</p>
+</li>
+<li>
+<p>rxjs和promise的异同<br>
+<a href="https://juejin.im/post/5ce53c646fb9a07ee4633a64">https://juejin.im/post/5ce53c646fb9a07ee4633a64</a></p>
+</li>
+<li>
+<p>你会在实际工作中使用 rxjava 吗？<br>
+<a href="https://www.zhihu.com/question/53151203/answer/164427549">https://www.zhihu.com/question/53151203/answer/164427549</a><br>
+感觉诞生之初主要是针对java这种没有协程、没有async/await语法的语言</p>
+</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/FUiKpHbqb/" class="tag">
+                    js
+                  </a>
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/influxdb-shang-shou-wan/">
+                  <h3 class="post-title">
+                    influxdb上手玩
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

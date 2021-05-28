@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Dockerfile试玩 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="起因
+在从办公机往开发机上搬运strapi时遇到了问题，他用到的sqlite3的odbc依赖高版本的glibc，结果yarn install失败，装不上。
+所以只好用docker装，一开始打算的是直接起官方的镜像，然后把data.db文件替..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Dockerfile试玩</h2>
+            <div class="post-date">2020-06-26</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/dockerfile-shi-wan.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="起因">起因</h1>
+<p>在从办公机往开发机上搬运<a href="https://strapi.io/">strapi</a>时遇到了问题，他用到的sqlite3的odbc依赖高版本的glibc，结果yarn install失败，装不上。</p>
+<p>所以只好用docker装，一开始打算的是直接起官方的镜像，然后把data.db文件替换掉，试了下不行。</p>
+<p>所以从mac的工程文件开始构建一个新的docker镜像，然后推到开发机上再部署。</p>
+<h1 id="操作">操作</h1>
+<p>首先，strapi官方提供了一个base镜像用来给你构建自己的工程，稍微改造了一下：<br>
+<img src="https://bonboru93.github.io/post-images/docker-img/docker_file.png" alt="" loading="lazy"></p>
+<p>这里有几个坑：</p>
+<ul>
+<li>workdir一定不能用根目录，否则报fs.inotify.max_user_watches错误</li>
+<li>本地的node_module、build、.cache目录先删掉，在mac上拉的依赖包可能和linux上不同</li>
+<li>为了在内网开发机上运行，要把依赖全部装好打包进去，所以yarn install在构建镜像的阶段运行</li>
+<li>由于是在容器里执行yarn，所以本地配置的源不会生效</li>
+<li>早期的docker toolbox在mac上是起了一个virtual box来跑的，后来的docker desktop换了一个轻量级的虚拟机，总之就是在mac上是看不到docker网桥的，需要ssh进容器的话要手动暴露端口，比如要用vscode remote的时候</li>
+<li>由于上一点，在build镜像的时候如果要用到proxy的话要指定宿主机的外网IP</li>
+</ul>
+<p>在mac本地build完镜像之后，docker save保存成tar包，然后传到开发机上，再 <code>docker load -i</code> 就行。</p>
+<p>当然也可以用portainer来上传：<br>
+<img src="https://bonboru93.github.io/post-images/docker-img/portainer1.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/docker-img/portainer2.png" alt="" loading="lazy"><br>
+创建容器不想打命令的话也可以直接用portainer：<br>
+<img src="https://bonboru93.github.io/post-images/docker-img/portainer_create.png" alt="" loading="lazy"><br>
+手动填入导入的镜像，配置端口映射和环境变量，点deploy就行。</p>
+<p>查看控制台信息确认strapi已经运行：<br>
+<img src="https://bonboru93.github.io/post-images/docker-img/portainer_console1.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/docker-img/portainer_console2.png" alt="" loading="lazy"></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/react-shi-yong-web-worker/">
+                  <h3 class="post-title">
+                    React使用Web Worker
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>influxdb上手玩 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+
+从一个表实例中学influxdb基本术语：
+
+总结：
+
+
+
+区别使用tag和field：
+
+
+
+serial是什么：
+
+
+
+influxdb重create和read，轻update和delete。
+不断添加时间戳递增的数据是常态，而补登..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">influxdb上手玩</h2>
+            <div class="post-date">2020-06-09</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/influxdb-shang-shou-wan.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <ol>
+<li>
+<p>从一个表实例中学influxdb基本术语：<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/table.png" alt="" loading="lazy"><br>
+总结：<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/key_def.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>区别使用tag和field：<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/tag_field.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>serial是什么：<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/serial.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>influxdb重create和read，轻update和delete。</p>
+<p>不断添加时间戳递增的数据是常态，而补登和修改旧数据是罕见的，数据只会因超时而删除，且应当利用influxdb原生的RP来实现而不是手工操作。<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/curd.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>旧数据会被归到分片shard中，推荐的RP和shard的关系<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/rp.png" alt="" loading="lazy"></p>
+<p>分片长度的取舍：</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/influxdb-intro/rp2.png" alt="" loading="lazy"></figure>
+<p>避免大量补登旧数据：</p>
+<figure data-type="image" tabindex="2"><img src="https://bonboru93.github.io/post-images/influxdb-intro/old_data.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>influxQL和RP的联动使用：</p>
+<figure data-type="image" tabindex="3"><img src="https://bonboru93.github.io/post-images/influxdb-intro/ql.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>核心概念：RP（Retention Policy）和CQ（Continuous Query）</p>
+<p>既然是时序数据库，那么数据保留多久以及如何对时间的统计粒度进行<br>
+调整是两大核心功能。</p>
+<p>RP顾名思义就是数据的保留策略，CQ顾名思义就是配置一个持续的统计汇总的任务。</p>
+<p>举例：<br>
+饭店有一张orders表，内容是10秒钟内的电话和网络订单量：<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/order.png" alt="" loading="lazy"><br>
+现在我们有如下统计需求：<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/order_count.png" alt="" loading="lazy"><br>
+具体配置如下：</p>
+<ol>
+<li>首先新建一个databse，RP和CQ都必须配置在databse上<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/p1.png" alt="" loading="lazy"></li>
+<li>配置一个duration为2小时的默认RP，注意在influxdb中如果不显式指定RP的话，会使用databse默认的RP，所以之后orders表中10秒粒度的原始数据就会在2小时后被删除<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/p2.png" alt="" loading="lazy"></li>
+<li>配置一个duration为52周的RP，注意不要将他配置为default，我们之后会通过它的名字【a_year】显式的使用它<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/p3.png" alt="" loading="lazy"></li>
+<li>创建一个每30分钟运行一次的CQ，并将其结果写入到一个新的降采样表中，同时显式的指定该表使用（3）中配置的a_year RP，使它的数据保留52周<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/p4.png" alt="" loading="lazy"><br>
+注意这里的<img src="https://bonboru93.github.io/post-images/influxdb-intro/42.png" alt="" loading="lazy">是influxdb要求的为某一张表指定RP的格式</li>
+<li>查看结果<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/p5.png" alt="" loading="lazy"></li>
+</ol>
+</li>
+<li>
+<p>和grafana一起使用<br>
+grafana是一个时序数据库的通用前端，可以配合influxdb方便的展示数据的时间变化。</p>
+<p>示例表：<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/grafana.png" alt="" loading="lazy"></p>
+<p>SQL配置：<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/sql.png" alt="" loading="lazy"></p>
+<p>页面效果：<br>
+<img src="https://bonboru93.github.io/post-images/influxdb-intro/page.png" alt="" loading="lazy"></p>
+</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/yao-bu-yao-yong-wai-jian/">
+                  <h3 class="post-title">
+                    要不要用外键
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

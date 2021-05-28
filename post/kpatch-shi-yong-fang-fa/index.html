@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>kpatch使用方法 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+编译kpatch
+
+cd /lib/modules/$(uname -r)
+ln -s kernel_build ./build
+ln -s kernel_build ./source
+git clone https://github.c..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">kpatch使用方法</h2>
+            <div class="post-date">2019-11-25</div>
+            
+            <div class="post-content" v-pre>
+              <ul>
+<li>编译kpatch</li>
+</ul>
+<pre><code class="language-shell">cd /lib/modules/$(uname -r)
+ln -s kernel_build ./build
+ln -s kernel_build ./source
+git clone https://github.com/dynup/kpatch.git
+cd kpatch-master
+make
+cd kmod/core
+make
+</code></pre>
+<ul>
+<li>创建目录
+<ol>
+<li>编译目录</li>
+</ol>
+<pre><code class="language-shell">git clone gbcc_url
+mv gbcc kernel_build
+git checkout working
+sh build.sh &gt; /dev/null
+</code></pre>
+<ol start="2">
+<li>未编译目录</li>
+</ol>
+<pre><code class="language-shell">git clone gbcc_url
+mv gbcc kernel_origin
+git checkout working
+</code></pre>
+<ol start="3">
+<li>patch目录</li>
+</ol>
+<pre><code class="language-shell">git clone gbcc_url
+mv gbcc kernel_kpatch
+git checkout kpatch
+</code></pre>
+</li>
+<li>使用脚本</li>
+</ul>
+<pre><code class="language-shell">diff -x &quot;.git&quot; -Nuar kernel_origin kernel_kpatch &gt; bbu.patch
+cat bbu.patch
+CACHEDIR=`pwd`/cache kpatch-master/kpatch-build/kpatch-build -t vmlinux bbu.patch -v kernel_build/vmlinux -s kernel_build
+rm -rf cache
+</code></pre>
+<p>脚本会判断内核是否支持livepatch，如果支持则产出的模块以livepatch打头，不支持则以kpatch打头。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/zhuan-4-xi-nei-he-chong-chuan-zong-jie/">
+                  <h3 class="post-title">
+                    【转】4系内核重传总结
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>kpatch原理学习 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="融合了katch和kgraft的livepatch
+
+在4系内核开启livepatch功能之前，一直是这样使用kpatch的。
+但开启了livepatch功能后，kpatch-build脚本检测到内核支持livepatch，就会生成live..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">kpatch原理学习</h2>
+            <div class="post-date">2020-01-19</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/kpatch-yuan-li-xue-xi.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="融合了katch和kgraft的livepatch">融合了katch和kgraft的livepatch</h2>
+<p><img src="https://bonboru93.github.io/post-images/kpatch-learn/livepatch.png" alt="" loading="lazy"><br>
+在4系内核开启livepatch功能之前，一直是这样使用kpatch的。</p>
+<p>但开启了livepatch功能后，kpatch-build脚本检测到内核支持livepatch，就会生成livepatch-xxx.ko模块，加载该模块时报【This architecture doesn't have support for the livepatch consistency model.】错误，追查后发现是livepatch为了保证安全，使用的是Consistency model，其所要求的【HAVE_RELIABLE_STACKTRACE】选项没有开启，该选项又受【UNWINDER_FRAME_POINTER】选项控制，开启后，才可以正常使用，但从其wiki和相关资料上看，开启UNWINDER_FRAME_POINTER会导致性能下降。</p>
+<p>尝试将kpatch-build脚本中检测内核是否支持livepatch的语句进行注释，强行使其生成kpatch-xxx.ko模块后再尝试加载，仍然报【This architecture doesn't have support for the livepatch consistency model.】错误。</p>
+<p>内核中sample/livepatch的代码在检测到当前的内核不支持reliable stack后会通过一个immediate字段绕过了安全性检查从而能够在未开启上述选项的情况下直接使用livepatch，但直接仿照内核中sample/livepatch的代码编写patch是不可接受的，因为这样需要手动复制出所有相关的的代码和头文件引用。且livepatch的wiki中警告了当patch尝试修改函数语义（如修改加锁顺序、有递归调用）时，绕过安全检查是有风险的。</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/kpatch-learn/imm.png" alt="" loading="lazy"></figure>
+<h2 id="kgraft">kgraft</h2>
+<p>阅读kgraft的官方文档可以发现他主要用了这几个技术：</p>
+<ol>
+<li>首先是如何安排被替换函数的跳转，做法是内核在编译时在函数的前部通过汇编的空操作预留了空间，当该函数需要被patch时，就用jmp指令替换nop空操作来实现：<br>
+<img src="https://bonboru93.github.io/post-images/kpatch-learn/jmp.png" alt="" loading="lazy"><br>
+当执行到该函数时就会自动跳转到新的patch过的函数：<br>
+<img src="https://bonboru93.github.io/post-images/kpatch-learn/patched.png" alt="" loading="lazy"></li>
+<li>其次是如何解决安全性问题，kgraft的官方文档中提出了几个安全风险：如果新函数修改了函数语义怎么办？比如修改了加锁的顺序。如果新函数存在递归调用怎么办？这里的核心问题是引入了新函数之后如果考虑到上下级的关联调用的话就会存在一个“世界观”的问题，如何在patch之后的过渡时期将从旧函数过来的调用继续返回到旧函数上去，从而保证每个task执行的过程中不会出现新旧函数混用的情况，安全性检查主要就在这个位置起作用：<br>
+<img src="https://bonboru93.github.io/post-images/kpatch-learn/check1.png" alt="" loading="lazy"><br>
+当过度时期结束，所有调用旧函数的task都结束之后，就可以放心的将所有调用都引导到新函数上去：<br>
+<img src="https://bonboru93.github.io/post-images/kpatch-learn/check2.png" alt="" loading="lazy"><br>
+这是kgraft技术中解决安全性问题的核心。</li>
+</ol>
+<h2 id="kpatch">kpatch</h2>
+<ol>
+<li>从kpatch的文档中发现，kpatch替换函数的方式和kgraft略有不同：<br>
+<img src="https://bonboru93.github.io/post-images/kpatch-learn/trace.png" alt="" loading="lazy"><br>
+不难看出他是通过ftrace，当调用到目标函数时，查哈希表找到新函数的加载地址，然后替换rip寄存器，从而实现从旧函数到新函数的跳转</li>
+<li>同样的，kpatch也要解决在过渡时期，正在执行旧函数的task如何保证安全的问题，阅读资料后发现他使用了一个stop_machine操作：<br>
+<img src="https://bonboru93.github.io/post-images/kpatch-learn/stop_machine.png" alt="" loading="lazy"><br>
+当加载kpatch之后停掉所有正在运行的进程和中断，然后执行安全检查，统一替换旧函数，然后再恢复运行。</li>
+</ol>
+<p>可以看到kgraft的做法相对优雅一些，通过栈追踪的方式区分调用来自哪个世界，而kpatch是直接stop_machine。</p>
+<p>而livepatch的consistency model明确表示需要reliable stack，因此认为这里主要使用了kgraft中的做法。</p>
+<p>那么如果不做这种安全检查是否有风险呢？肯定是有的，但什么情况下存在风险？根据文档中的表述，如果修改了函数语义就可能存在风险。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/wu-zhuang-tai-web-token-shi-xian/">
+                  <h3 class="post-title">
+                    无状态web token实现
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

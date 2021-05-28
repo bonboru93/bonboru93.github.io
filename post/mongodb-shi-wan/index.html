@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>mongodb试玩 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="mongodb是个文档数据库，数据和查询都以json格式呈现，母语是js，借着做项目的机会来玩玩看。
+首先，我们从甲方提供的接口获取数据，数据内容主要是服务器的托管的域名，以及各个域名对应的带宽。以json格式给出。
+但是这个json的内容..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">mongodb试玩</h2>
+            <div class="post-date">2020-06-22</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/mongodb-shi-wan.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>mongodb是个文档数据库，数据和查询都以json格式呈现，母语是js，借着做项目的机会来玩玩看。</p>
+<p>首先，我们从甲方提供的接口获取数据，数据内容主要是服务器的托管的域名，以及各个域名对应的带宽。以json格式给出。</p>
+<p>但是这个json的内容很不规范，speed_domain_list是个数组，数组元素不是{domain, band}这样的对象，而是又套了一个数组：<br>
+<img src="https://bonboru93.github.io/post-images/mongodb-snap/format.png" alt="" loading="lazy"><br>
+我们当然可以对原始数据进行处理以后再写入数据库，但是mongodb是文档数据库，可以直接接受json，所以这里我们就挑战完全不改原始数据，在查询上下功夫吧。</p>
+<p>我们的需求：找出有指定域名流量的节点，按该域名的带宽大小排序输出。</p>
+<p>speed_domain_list数组里嵌套的一个数组，该数组第一项是域名，第二项是带宽。外层数组按带宽降序排列，共10项。</p>
+<p>首先，单纯的用find函数中带的project是实现不了复杂的功能的，他只能筛选需要的字段，不能创建字段。<br>
+<img src="https://bonboru93.github.io/post-images/mongodb-snap/compass.png" alt="" loading="lazy"></p>
+<p>我们需要先创建一个aggregation，把我们要的数据映射出来，然后再通过find来筛选和排序。</p>
+<p>这个aggregation可以由一串操作组成，有映射、增删字段、统计等等，文档很多很杂，这里就直接用比较通用的project映射。<br>
+<img src="https://bonboru93.github.io/post-images/mongodb-snap/project.png" alt="" loading="lazy"></p>
+<p>然后由于他这个speed_domain_list是个嵌套数组，试过了speed_domain_list[0]、speed_domain_list.0都不行，要用$arrayElemAt。</p>
+<p>然后$indexOfArray只能直接比较，不支持正则表达式、不支持自定义的比较逻辑，所以最后还是引入了map和cond，整个映射写的极其蛋疼：</p>
+<ol>
+<li>
+<p>映射一次<br>
+<img src="https://bonboru93.github.io/post-images/mongodb-snap/map1.png" alt="" loading="lazy"><br>
+有域名列表的话，也可以用in来匹配<br>
+<img src="https://bonboru93.github.io/post-images/mongodb-snap/domain_in.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>再映射一次<br>
+<img src="https://bonboru93.github.io/post-images/mongodb-snap/map2.png" alt="" loading="lazy"><br>
+写对了aggregation之后，可以用这个aggregation创建一个view，和sql中的view是一个含义：<br>
+<img src="https://bonboru93.github.io/post-images/mongodb-snap/view.png" alt="" loading="lazy"></p>
+</li>
+</ol>
+<p>然后终于可以在我们的view上做最终的查询了，先filter出rank大于等于0，也就是有指定域名流量的节点，然后按带宽大小降序sort。<br>
+<img src="https://bonboru93.github.io/post-images/mongodb-snap/view_search.png" alt="" loading="lazy"></p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/rxjs-chu-shi/">
+                  <h3 class="post-title">
+                    rxjs初识
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

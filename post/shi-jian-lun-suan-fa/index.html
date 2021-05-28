@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>时间轮算法 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="简介
+做定时器其实就是让你维护一个有序数据结构，除了用插入排序、二叉堆之类的去搞以外，哈希桶也是一种办法。
+时间轮其实就是一种哈希桶的变种。
+
+最朴素的搞法就是一个哈希桶，两头串起来，变成哈希环。
+定时器根据超时时间的不同，挂到哈希环上对应..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">时间轮算法</h2>
+            <div class="post-date">2021-03-01</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/shi-jian-lun-suan-fa.jpeg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="简介">简介</h1>
+<p>做定时器其实就是让你维护一个有序数据结构，除了用插入排序、二叉堆之类的去搞以外，哈希桶也是一种办法。</p>
+<p>时间轮其实就是一种哈希桶的变种。</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/time-wheel/simple.jpg" alt="" loading="lazy"></figure>
+<p>最朴素的搞法就是一个哈希桶，两头串起来，变成哈希环。</p>
+<p>定时器根据超时时间的不同，挂到哈希环上对应的格子里去。看上面的图就表示第1秒有2个任务超时，第3秒有3个任务超时。</p>
+<p>然后有一个指针在环上不停的去转，取下经过的格子里的任务去执行。</p>
+<p>单单是这样的话没法应对很大的时间范围，因为哈希桶要吃内存。</p>
+<p>所以我们想到了真实的时钟：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/real.png" alt="" loading="lazy"><br>
+这看起来就像是一个只有60个小格和12个大格的哈希环，每个小格是1秒，大格是1小时。但是通过【时】【分】【秒】这3个指针的组合却表示了12*60*60秒的时间范围。</p>
+<p>这就启发我们可以模仿真实的时钟来级联多个时间轮，在有限的空间内表示大范围的时间。</p>
+<h1 id="实例说明">实例说明</h1>
+<p>这里我们就完全模仿真实的时钟，来做一个demo用时间轮。</p>
+<p>可以看到，时钟上有【时】【分】【秒】三个指针，</p>
+<p>秒针一圈60格，转一圈是1分钟，带动分针走一格，</p>
+<p>分针一圈60格，转一圈是1小时，带动时针走一格，</p>
+<p>时针一圈12格，转一圈是半天，然后重新开始。</p>
+<p>时钟最大表示12小时，最小精度为1秒。</p>
+<p>区别于真实的时钟在同一个表盘上重叠时针、分针和秒针，我们需要3个独立的表盘来分别表示时、分和秒，你可以想象我们把真实的时钟做了z轴上的拆解。</p>
+<p>别忘了时间轮是一种定时器，我们不光要知道现在几点，还要知道在未来的某个时间点上有哪些任务。</p>
+<p>所以具体到数据结构上，是3个环：</p>
+<ul>
+<li>秒针环长60，保存在未来60秒内超时的任务</li>
+<li>分针环长60，保存在未来60分钟内超时的任务</li>
+<li>时针环长12，保存在未来12小时内超时的任务</li>
+</ul>
+<p>画出来的话就长这个样子，假设一开始是0时0分0秒：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/000.png" alt="" loading="lazy"><br>
+接着我们来加任务，举几个栗子：</p>
+<table>
+<thead>
+<tr>
+<th>时间</th>
+<th>任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0时0分24秒</td>
+<td>task1</td>
+</tr>
+<tr>
+<td>0时18分46秒</td>
+<td>task2</td>
+</tr>
+<tr>
+<td>2时30分45秒</td>
+<td>task3</td>
+</tr>
+<tr>
+<td>2时50分9秒</td>
+<td>task4</td>
+</tr>
+<tr>
+<td>2时50分10秒</td>
+<td>task5</td>
+</tr>
+</tbody>
+</table>
+<p>来看添加完以后，整个时间轮的样子：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/fulltask.png" alt="" loading="lazy"><br>
+就像我们说好的那样，未来60秒内超时的task1放在了秒针环，未来60分钟超时的task2放在了分针环，未来12小时超时的task3～5放在了时针环，有task的格子会标红。</p>
+<p>如果你暂时不理解为什么这么放，接着看，我们让时间轮转起来就好懂了。</p>
+<p>好了，可以让时间轮转起来了，<strong>就像真正的时钟一样</strong>。</p>
+<p>当经过了24秒，也就是秒针走到第24格时，我们惊喜的发现这一格里有一个task1，于是我们把他摘下来执行，这时候时间轮的样子：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/task1.png" alt="" loading="lazy"><br>
+摸鱼的时间总是过得很快，转眼就发呆了18分钟了，我们发现分针的第18格里有东西，快把他摘下来。</p>
+<p>但不能立即执行他，别忘了我们的定时器精度是1秒呢，人家明明白白的写了要0时18分46秒的时候才能执行。</p>
+<p>怎么办？只好把他再放到秒针环链表上第46格的位子，让秒针去走过这46秒，这样才能准确到1秒嘛：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/task2_move.png" alt="" loading="lazy"><br>
+接下来你应该猜到了，打了个水回来，正好就用了46秒，boom，task2触发：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/task2.png" alt="" loading="lazy"><br>
+只有分针和秒针还不够，我们的定时器说好了要保存12小时以内的超时事件的。</p>
+<p>所以时针也要用起来呀，于是我们安插了3个两个多小时才超时的task3～5。</p>
+<p>当然了，这次要让时钟快转2个小时，到我们要演示的地方：</p>
+<p><img src="https://bonboru93.github.io/post-images/time-wheel/2h.png" alt="" loading="lazy"><br>
+和分针类似的，2个小时还不足以触发我们的task们，要记得我们的精度总是1秒啊。</p>
+<p>那是不是直接把task从时针环换到秒针环就行了呢？</p>
+<p>很显然不是，饭要一口一口吃，【小时】和【秒】中间还隔着一个【分钟】，所以先迈一步，放在分钟环上就好，task3是30多分钟的，task4和task5是50多分钟的：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/2h_move.png" alt="" loading="lazy"><br>
+这下你发现，现在的情形除了时针从0走到了2，其他的都和0时18分46秒的那个定时器触发流程是完全类似的了。</p>
+<p>那我们就加速加速，快进到2时30分，task3从分针环摘下，放到秒针环：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/task3_move.png" alt="" loading="lazy"><br>
+2时30分45秒，task3触发：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/task3.png" alt="" loading="lazy"><br>
+2时50分，task4、task5被摘下，放到秒针环：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/task45_move.png" alt="" loading="lazy"><br>
+2时50分9秒，task4触发：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/task4.png" alt="" loading="lazy"><br>
+2时50分10秒，task5触发：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/task5.png" alt="" loading="lazy"><br>
+好了，到这里时间轮的原理应该演示的很清楚了。</p>
+<h1 id="算法分析">算法分析</h1>
+<p>和时间堆相比，时间轮很显然是一种空间换时间的算法。</p>
+<p>时间堆的单次插入和删除的复杂度都是logn，而时间轮是常数级的，考虑到超时重传等性质的定时器绝大多数不会真的触发，用时间轮做会是一个不错的优化。</p>
+<p>时间轮的转动开销平摊到了每次事件循环当中，是可以接受的。</p>
+<p>为了缓解空间开销的问题，我们模仿真实的时钟设计了多级时间轮。用<strong>12+60+60</strong>个格子，就表示出了<strong>12*60*60</strong>个时间点，使得空间开销变得可以接受。</p>
+<h1 id="源码分析">源码分析</h1>
+<p>我们来看看实际的时间轮源码是怎么写的，这里选用了裁剪过的linux内核时间轮代码</p>
+<p>先声明源码和上面的演示有哪些不同：</p>
+<ul>
+<li>计算机里我们用jiffies（可以简化理解为ms）来表示时间，所以精度为1ms</li>
+<li>我们受真实时钟的启发设计了多级时间轮，但在实做的时候不会真的按照12+60+60的来做。搞几个轮，每个轮有几个格子都是可以调的。比如我们可以指定1喵秒=123ms，1喵分=456喵秒，1喵时=789喵分，最大超时10喵时，这样一来我们做出了一个【用4个轮子，总共10+789+456+123个格子表示10*789*456*123个ms】的时间轮系统</li>
+<li>接上条，为了方便，我们会直接以jiffies的位数来分割轮子，这样就很好的避免了去算余数之类的麻烦且没有必要的操作。在下面的源码中你会看到我们做了3个轮，小轮取jiffies的低18位，也就是说小轮有2^18个格子。中轮和大轮都是2^7个格子，整个时间轮系统最大表示2^(18+7+7)ms</li>
+<li>于时间而言我们都是被动的（<s>哲理</s>），我们要做的是在每次事件循环中，去找OS要当前时间，然后把时间轮从上次停下的时间一格一格的转到当前时间，同时执行这个转动过程中摘下的task。也就是说时间轮的精度其实是取决于每次事件循环的延迟，而不总是1ms</li>
+</ul>
+<p>看代码前先上个示意图，迷糊了可以对着看：<br>
+<img src="https://bonboru93.github.io/post-images/time-wheel/source.png" alt="" loading="lazy"></p>
+<pre><code class="language-c">#include &quot;timer.h&quot;
+#include &quot;list.h&quot;
+#include &quot;jiffies.h&quot;
+
+struct timer_list {
+    struct pal_list_head entry;
+    struct pal_list_head *base_vec;
+    unsigned long long expires;
+    void (*function)(unsigned long);
+    unsigned long data;
+};
+
+#define TVN_BITS (7) //中轮和大轮，7位
+#define TVR_BITS (18) //小轮，18位
+#define TVN_SIZE (1 &lt;&lt; TVN_BITS) //中轮和大轮的格子数
+#define TVR_SIZE (1 &lt;&lt; TVR_BITS) //小轮的格子数
+#define TVN_MASK (TVN_SIZE - 1)
+#define TVR_MASK (TVR_SIZE - 1)
+
+struct tvec { //中轮和大轮
+    struct pal_list_head vec[TVN_SIZE]; //链表，放task
+};
+struct tvec_root { //小轮
+    struct pal_list_head vec[TVR_SIZE]; //链表，放task
+};
+struct tvec_base { //整个时间轮系统
+    unsigned long long timer_jiffies; //时间戳
+    struct tvec_root tv1; //小轮
+    struct tvec tv2; //中轮
+    struct tvec tv3; //大轮
+};
+
+static inline void init_tvec_t(struct tvec *tv)
+{
+    int j;
+    for (j = 0; j &lt; TVN_SIZE; j++) {
+        PAL_INIT_LIST_HEAD(&amp;tv-&gt;vec[j]);
+    }
+    return;
+}
+static inline void  init_tvec_root_t(struct tvec_root *tv)
+{
+    int j;
+    for (j = 0; j &lt; TVR_SIZE; j++) {
+        PAL_INIT_LIST_HEAD(&amp;tv-&gt;vec[j]);
+    }
+    return;
+}
+
+static struct pal_list_head *get_new_vec_head(struct tvec_base *base,
+        uint64_t expires)
+{
+    int i;
+    uint64_t idx = expires - base-&gt;timer_jiffies; //计算超时时间和当前时间相差多少
+    struct pal_list_head *vec;
+    if (idx &lt; TVR_SIZE) { //如果在小轮的范围内
+        i = expires &amp; TVR_MASK; //拿出小轮对应的位数
+        vec = base-&gt;tv1.vec + i; //看要放在小轮的第几个位子
+    } else if(idx &lt; (1 &lt;&lt; (TVR_BITS + TVN_BITS))) { //如果在中轮的范围内
+        i = (expires &gt;&gt; TVR_BITS) &amp; TVN_MASK; //拿出中轮对应的位数
+        vec = base-&gt;tv2.vec + i; //看要放在中轮的第几个位子
+    } else if((long long)idx &lt; 0) { //如果已经过了
+        vec = base-&gt;tv1.vec + ((base-&gt;timer_jiffies + 1) &amp; TVR_MASK); //放进小轮的下一个格子，尽快执行
+    } else { //以上都不是，那就是要放在大轮了
+        if(idx &gt; 0xffffffffUL) { //不能超过最大范围啊干
+            idx = 0xffffffffUL;
+            expires = idx + base-&gt;timer_jiffies;
+        }
+        i = (expires &gt;&gt; (TVR_BITS + TVN_BITS)) &amp; TVN_MASK; //拿出大轮对应的位数
+        vec = base-&gt;tv3.vec + i; //看要放在大轮的第几个位子
+    }
+    return vec;
+}
+
+static inline void attach_timer(struct timer_list *timer,
+                                struct pal_list_head *new_vec_head) //加一个定时器
+{
+    pal_list_add_tail(&amp;timer-&gt;entry, new_vec_head);
+    timer-&gt;base_vec = new_vec_head;
+}
+
+static inline int detach_timer(struct timer_list * timer) //删一个定时器
+{
+    struct pal_list_head *base_vec;
+    base_vec = timer-&gt;base_vec;
+    if(!base_vec)
+        return 0;
+    pal_list_del(&amp;timer-&gt;entry);
+    timer-&gt;base_vec = NULL;
+    return 1;
+}
+
+int __mod_timer(struct tvec_base *host_base, struct timer_list *timer, uint64_t expires) //改超时时间
+{
+    int ret = 0;
+    struct tvec_base *host_base;
+    struct pal_list_head *new_vec_head = NULL, *old_vec_head = NULL;
+
+    timer-&gt;expires = expires;
+    old_vec_head = timer-&gt;base_vec; //现在挂在哪个格子？
+    host_base = &amp;PAL_PER_THREAD(_tvec_base);
+    new_vec_head = get_new_vec_head(host_base, expires); //要换到哪个格子下？
+    if (new_vec_head == old_vec_head )
+        return 0;
+    if (old_vec_head) {
+        pal_list_del(&amp;timer-&gt;entry);
+        ret = 2;
+    } else {
+        ret = 1;
+    }
+    attach_timer(timer, new_vec_head); //放上去
+    return ret;
+}
+
+int mod_timer(struct timer_list *timer, uint64_t expires)
+{
+    return __mod_timer(timer, expires);
+}
+
+int del_timer(struct timer_list *timer)
+{
+    return detach_timer(timer);
+}
+
+static int cascade(struct tvec_base *base, struct tvec *tv, int index) //大轮换中轮，中轮换小轮在这里做
+{
+    struct pal_list_head *head, *curr;
+    struct pal_list_head *new_vec_head, *old_vec_head;
+    struct timer_list *tmp;
+    old_vec_head = tv-&gt;vec + index; //要从哪个格子里摘task？
+    head = old_vec_head;
+    curr = head-&gt;next;
+    while (curr != head) { //遍历所有的task
+        tmp = pal_list_entry(curr, struct timer_list, entry);
+        curr = curr-&gt;next;
+        new_vec_head = get_new_vec_head(base, tmp-&gt;expires); //要挂到哪个格子下？
+        if (new_vec_head != old_vec_head) {
+            __pal_list_del(tmp-&gt;entry.prev, tmp-&gt;entry.next);
+            attach_timer(tmp, new_vec_head); //放上去
+        }
+    }
+    return index;
+}
+
+#define INDEX(N) (base-&gt;timer_jiffies &gt;&gt; (TVR_BITS + N * TVN_BITS)) &amp; TVN_MASK
+
+uint32_t run_timer(int budget, tvec_base *base) //时间轮跑起来，budget意思是一次最多执行多少个task
+{
+    int index;
+    uint32_t events_num = 0;
+    uint64_t jiffies_local = jiffies;
+    struct timer_list *timer = NULL;
+    struct pal_list_head *vec_head = NULL;
+    struct pal_list_head *head = NULL;
+
+    while (budget &gt; 0 &amp;&amp; (jiffies_local &gt;= base-&gt;timer_jiffies)) { //有budget，时间轮还没转到当前时间
+        index = base-&gt;timer_jiffies &amp; TVR_MASK; //拿出小轮对应的位数
+        vec_head = base-&gt;tv1.vec + index; //看是哪个格子
+        head = vec_head;
+
+        if ((index == 0) &amp;&amp; ((cascade(base, &amp;base-&gt;tv2, INDEX(0))) == 0)) {
+            //如果小轮在第0个格子，说明小轮转了一圈，那么中轮就要走一格，然后把新格子里的task摘下来换到小轮上
+            cascade(base, &amp;base-&gt;tv3, INDEX(1));
+            //同理，如果中轮在第0个格子，说明中轮转了一圈，那么大轮就要走一格，然后把新格子里的task摘下来换到中轮上
+            //这里的INDEX宏就是帮你取各个轮子的位数，应该很好懂
+        }
+        while (!pal_list_empty(head) &amp;&amp; (budget--)&gt;0) { //把当前格子里有的task都拿出来执行，底下这些链表操作不解释了
+            void (*fn)(unsigned long);
+            unsigned long data;
+            timer = pal_list_entry(head-&gt;next, struct timer_list, entry);
+            fn = timer-&gt;function;
+            data = timer-&gt;data;
+            pal_list_del(&amp;timer-&gt;entry);
+            timer-&gt;base_vec = NULL;
+            fn(data);
+            events_num++;
+        }
+        if (pal_list_empty(head)) //task都执行完了，小轮再转一格
+            base-&gt;timer_jiffies++;
+    }
+    return events_num;
+}
+
+static int init_timers() //初始化，都看得懂
+{
+    init_tvec_root_t(&amp;tb-&gt;tv1);
+    init_tvec_t(&amp;tb-&gt;tv2);
+    init_tvec_t(&amp;tb-&gt;tv3);
+    tb-&gt;timer_jiffies = jiffies;
+    return 0;
+}
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/node-da-wen-jian-xia-zai-oom-wen-ti/">
+                  <h3 class="post-title">
+                    node大文件下载oom问题
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

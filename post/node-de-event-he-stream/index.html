@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Node的event和stream | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+EventEmitter是啥
+
+event的this绑定
+
+error事件
+
+listener个数
+
+可读流的两种模式
+
+流的encoding
+
+http的req、res也是流
+
+链式流
+
+标准输入流重定向到文件
+
+使用异步迭代器实现类p..." />
+    <meta name="keywords" content="js,基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Node的event和stream</h2>
+            <div class="post-date">2020-07-22</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/node-de-event-he-stream.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <ol>
+<li>EventEmitter是啥<br>
+<img src="https://bonboru93.github.io/post-images/node-event/node_definition.png" alt="" loading="lazy"></li>
+<li>event的this绑定<br>
+<img src="https://bonboru93.github.io/post-images/node-event/this.png" alt="" loading="lazy"></li>
+<li>error事件<br>
+<img src="https://bonboru93.github.io/post-images/node-event/error.png" alt="" loading="lazy"></li>
+<li>listener个数<br>
+<img src="https://bonboru93.github.io/post-images/node-event/listen.png" alt="" loading="lazy"></li>
+<li>可读流的两种模式<br>
+<img src="https://bonboru93.github.io/post-images/node-event/read_stream.png" alt="" loading="lazy"></li>
+<li>流的encoding<br>
+<img src="https://bonboru93.github.io/post-images/node-event/encoding.png" alt="" loading="lazy"></li>
+<li>http的req、res也是流<br>
+<img src="https://bonboru93.github.io/post-images/node-event/http.png" alt="" loading="lazy"></li>
+<li>链式流<br>
+<img src="https://bonboru93.github.io/post-images/node-event/chain.png" alt="" loading="lazy"></li>
+<li>标准输入流重定向到文件<br>
+<img src="https://bonboru93.github.io/post-images/node-event/redirect.png" alt="" loading="lazy"></li>
+<li>使用异步迭代器实现类promise读取流<br>
+<img src="https://bonboru93.github.io/post-images/node-event/async.png" alt="" loading="lazy"></li>
+<li>使用stream.pipeline一次性完成整条流<br>
+<img src="https://bonboru93.github.io/post-images/node-event/line.png" alt="" loading="lazy"></li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/FUiKpHbqb/" class="tag">
+                    js
+                  </a>
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/yong-node-gao-yi-ge-4-ceng-dai-li/">
+                  <h3 class="post-title">
+                    用node搞一个4层代理
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

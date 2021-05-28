@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>宅家玩魔改u | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="很早就听说了华强北魔改u的神奇操作，也暗戳戳的提前翻了几篇自己动手改bios加微码支持魔改u的教程，想着正好把家里几年前压箱底的一块主板和两根内存翻出来废物利用。
+
+又正好最近刚仔仔细细的看了一遍dortania的opencore tuto..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">宅家玩魔改u</h2>
+            <div class="post-date">2021-05-28</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/zhai-jia-wan-mo-gai-u.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>很早就听说了华强北魔改u的神奇操作，也暗戳戳的提前翻了几篇自己动手改bios加微码支持魔改u的教程，想着正好把家里几年前压箱底的一块主板和两根内存翻出来废物利用。</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/cpu.jpg" alt="" loading="lazy"></figure>
+<p>又正好最近刚仔仔细细的看了一遍dortania的opencore tutorial，感叹现在的黑果再没那么复杂了，有了SSDTTime、lilu、whatevergreen这些工具，就不用像从前一样没完没了的适配了，在老笔电上先试了下也一次成功。</p>
+<p>所以要是成功组起来的话，硬改+软改，改上改，岂不是牛逼坏了。</p>
+<p>可惜最近矿潮，显卡搞不定了，只能用用核显。压箱底的b250主板没有dp口，没法用4k，我反正是回不去1080p了。而且更要命的是这板子是d4的，找出来的内存偏偏是d3。这么一来废物利用没戏了。</p>
+<p>又不死心，在b站找了最近玩魔改比较狂的up主图吧之花七七，搞到了一套z170+qqls的板u套装回来折腾。毕竟魔改i9，16个框框，还是挺唬人的。（<s>疯狂加钱</s>）</p>
+<figure data-type="image" tabindex="2"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/qq.jpg" alt="" loading="lazy"></figure>
+<p>到手看着还是很舒服的，itx的板子小小一个，散热器也很精致的亚子。</p>
+<p>没想到后面的事情远没有那么简单QQ</p>
+<h1 id="到手">到手</h1>
+<p>到手开机一次点亮，看bios发现七七超了CPU，拉高了电压和功耗墙，动了内存时序，固定了内存频率到1600。</p>
+<figure data-type="image" tabindex="3"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/bios1.jpg" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/bios2.jpg" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/bios3.jpg" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/bios4.jpg" alt="" loading="lazy"></figure>
+<p>还原了bios之后发现就点不亮了，一番测试发现是内存频率的锅，超过1600就点不亮了，可能是魔改u的问题。这个倒是还好，差一点无所谓，不过要记得备一条默频低于1600的内存，不然哪天bios没电了就gg了。还好七七姐送了一条测试条给我，暖。</p>
+<p>然后还是先装个win，大概看了看没啥问题。然后把DSDT撸下来。开始做黑果的安装盘。</p>
+<h1 id="装黑果">装黑果</h1>
+<p>第一遍还是严格按手册来，有点不太确定的是这个笔记本u魔改出来的到底算desktop还是laptop，决定先按desktop的来，有问题的了再对比看laptop改了什么。</p>
+<p>整好检查一遍开始上机，结果报这个错：</p>
+<figure data-type="image" tabindex="7"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/bug.jpg" alt="" loading="lazy"></figure>
+<p>刚开始起不来也正常，这时候还不慌。</p>
+<p>首先看最终是panic了，所以应该是死在kernel。</p>
+<p>kernel dump之前有ACPI Error，但不确定是不是导致panic的直接原因，dump到最后只有地址，没有给出函数名，不好判断。</p>
+<p>决定先查ACPI的问题。</p>
+<p>从报错信息上看，是RHUB下的HS11端口未定义，也就是说是USB的问题。</p>
+<p>先把USBInjectAll删掉试试，不行。</p>
+<p>把XHCIPortLimit去掉试试，不行。</p>
+<figure data-type="image" tabindex="8"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/xhci1.png" alt="" loading="lazy"></figure>
+<p>尝试这个XHCI-unsupported，不行。</p>
+<figure data-type="image" tabindex="9"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/xhci2.png" alt="" loading="lazy"></figure>
+<p>对比laptop平台和desktop平台，发现有这么一个quirk的不同，感觉就是这个问题了，还是不行。</p>
+<figure data-type="image" tabindex="10"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/rhub.png" alt="" loading="lazy"></figure>
+<p>再尝试查和RHUB有关的fix，发现了这个SSDT，感觉也很接近问题的本源了，还是不行。</p>
+<figure data-type="image" tabindex="11"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/panic1.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="12"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/panic2.png" alt="" loading="lazy"></figure>
+<p>暂且不管ACPI的问题，直接查kernel issue，看是不是和boot的quirk有关，尝试了这三项的各种组合，结果都还是不行。</p>
+<figure data-type="image" tabindex="13"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/dsdt.png" alt="" loading="lazy"></figure>
+<p>最终还是绕回来看ACPI的问题，报错的是HS11未定义，从DSDT里看，HS11的定义是放在一个if里面，会不会是因为这个if不成立呢。查表看PCHV和SPTH都是有的，值也是对的。讲道理不应该。</p>
+<p>不过也有看到某个帖子说这个global的if会被放在最后才执行，如果之前就引用了就可能有错。</p>
+<p>没搞过bios真是抓瞎，也怪之前上班摸鱼的时候只是简单翻了一遍ACPI spec，没有认真学习，现在只能猜测然后尝试了。</p>
+<p>自己动手把这一串RHUB下的定义复制一份放到if的外面，还是失败了。</p>
+<figure data-type="image" tabindex="14"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/ssdt.png" alt="" loading="lazy"></figure>
+<p>再想，不去动定义的部分，改一改引用的地方可不可以，毕竟这几个端口可以不用。</p>
+<p>把opencore的sysReport打开，把DSDT连同所有的SSDT全部dump出来，在SSDT-6这张表里面看到了报错的xh_rvp08这个表名，里面全是RHUB下的端口定义。</p>
+<p>尝试删掉HS11，无效。</p>
+<figure data-type="image" tabindex="15"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/rvp08.png" alt="" loading="lazy"></figure>
+<p>尝试直接写ACPI配置下的的block部分，把整张xh_rvp08表给干掉。</p>
+<p>这下倒是没再报ACPI Error了，不过还是死在了kernel panic。</p>
+<p>再一看usb鼠标键盘都断电了，看样子是打击面太大了。</p>
+<p>仰天长叹啊，没想到最终还是到了四处乱翻论坛和社区的阶段，和黑果有关的几篇帖子的解法都没用，一堆linux下的问题倒是乱入了不少，我甚至还查了查bsd有没有kdump之类的工具，能让我看看最后挂的这两个地址到底是啥函数。</p>
+<p>╮(╯▽╰)╭搞得休假跟上班一样。</p>
+<figure data-type="image" tabindex="16"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/d.png" alt="" loading="lazy"></figure>
+<p>最后放弃治疗，认同上面这个帖子的意见，还是魔改bios的问题可能性大一些，为了支持多核和超线程，搞乱了一些东西，将来有机会做bios再研究吧QQ</p>
+<h1 id="没想到win也有问题">没想到win也有问题</h1>
+<p>无奈老老实实用回win了，虽然很不甘心。这么多年了，win肯定又多了不少脏东西了，又要花时间去整，烦人。</p>
+<p>没想到还没开始折腾，就发现了一个更要命的问题。</p>
+<p><strong>4k输出间歇性黑屏</strong></p>
+<p>刚到手的时候先接的老屏幕做测试，所以没发现。</p>
+<p>尝试换一条dp1.4的线，无效。</p>
+<p>尝试套一个屏蔽环，无效。</p>
+<p>尝试调30hz，似乎有点好转，不过还是会闪。</p>
+<figure data-type="image" tabindex="17"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/4k.jpg" alt="" loading="lazy"></figure>
+<p>查到可能还是和魔改u有关系，联想到之前高频内存点不亮，越看越像这个人描述的问题。</p>
+<p>最后只能是退机了QQ</p>
+<h1 id="再换一台试试">再换一台试试！</h1>
+<p>实在是不甘心就这么没玩成，所以又摸了一个新玩具</p>
+<figure data-type="image" tabindex="18"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/m710.jpg" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="19"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/m710-spec.jpg" alt="" loading="lazy"></figure>
+<p>1L的小主机，不过还是带的魔改u，有dp口，wifi蓝牙也都有，而且关键是有看到同型号黑果成功的帖子了，感觉安心。</p>
+<p>结果搞回来以后发现win下4k还是间歇性黑屏，天哪简直是简直了，魔改是和4k有仇的么！</p>
+<p>不死心，还是先撸个黑果看看，说不定黑果下不黑屏呢。</p>
+<h1 id="黑果again">黑果again</h1>
+<p>这台搞下来倒是没有费太大的力气，唯一值得说一下的就是显存预分配的问题。</p>
+<figure data-type="image" tabindex="20"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/mem.png" alt="" loading="lazy"></figure>
+<p>第一次上机卡在最后要进GUI的位置，猜测是显卡相关的问题。</p>
+<p>试着压低显存stolen的量就顺利进入安装界面了。</p>
+<p>不过装好之后没有4k输出，最高只到2k，猜测是预分配的量压的太低，不够4k的缓冲帧。</p>
+<figure data-type="image" tabindex="21"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/stole.png" alt="" loading="lazy"></figure>
+<p>之所以压低了之后可以进系统是因为UHD630在mac下默认缓冲帧大小的是57MB，超过了bios分配的值。压低了之后虽然能进系统，但出不了4k了。</p>
+<p>第一遍翻bios的时候没有看到能调预分配显存的地方，这种品牌机的bios都很简陋，这也正常。</p>
+<p>难不成又要开始新一轮的折腾？找卖家要bios自己动手改？</p>
+<p>想想就头大，不过还好，又仔细的翻了一遍发现，在video option中先把输出类型从auto改成IGD之后，预分配显存的选项就出来了。</p>
+<p>真TM搞笑，根本就没独显还要来这么一出，不过总算是皆大欢喜。调大到64MB之后，就可以去掉stolenmem的调整，直接用platform-id就能驱动了，型号也不需要仿冒。</p>
+<h1 id="wifi的问题">wifi的问题</h1>
+<p>卖家带的网卡是intel的7260ac，印象中之前intel无线网卡在黑果下都是无解的。</p>
+<figure data-type="image" tabindex="22"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/intel.png" alt="" loading="lazy"></figure>
+<p>不过最近似乎也是有了社区版驱动了。</p>
+<p>试用了一下在big sur下2.4G不可用，5G勉强可以，蓝牙不可用。</p>
+<p>看了下这个驱动是和系统有关的，重装mojave之后有好转，2.4G勉强可以，5G完全可用，蓝牙勉强可以。</p>
+<figure data-type="image" tabindex="23"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/anta.jpg" alt="" loading="lazy"></figure>
+<p>拆机发现，网卡上接的是一个外置天线，一个贴片天线，这个贴片天线实在是过于简陋了。。。</p>
+<p>两根天线调换过来的话，蓝牙就可用了。不过2.4G又不行了哈哈哈哈，应该是这个垃圾贴片天线的问题了。</p>
+<p>重新买了个外置天线，中间还买错了，不知道IPEX的接头有1型和4型，又是几天的折腾。</p>
+<p>然后这个机箱后面没有第二个天线接口，不过有预留了两个十字口子，可以从外面接天线进来，然后用热熔胶固定，搞定～</p>
+<figure data-type="image" tabindex="24"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/anta2.jpg" alt="" loading="lazy"></figure>
+<h1 id="后记">后记</h1>
+<p>珍惜这段装在盒子里的时间</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/shi-jian-lun-suan-fa/">
+                  <h3 class="post-title">
+                    时间轮算法
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

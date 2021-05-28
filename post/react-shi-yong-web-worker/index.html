@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>React使用Web Worker | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="先决条件（quote microsoft）
+web worker详解：https://juejin.im/post/5ef2a554f265da02e47d952b
+DeZaiA!
+在编写FlowReader可视化工具时，发现当数据量过大时..." />
+    <meta name="keywords" content="js,基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">React使用Web Worker</h2>
+            <div class="post-date">2020-06-24</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/react-shi-yong-web-worker.jpeg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="先决条件quote-microsoft">先决条件（quote microsoft）</h1>
+<p>web worker详解：<a href="https://juejin.im/post/5ef2a554f265da02e47d952b">https://juejin.im/post/5ef2a554f265da02e47d952b</a></p>
+<h1 id="dezaia">DeZaiA!</h1>
+<p>在编写FlowReader可视化工具时，发现当数据量过大时执行排序等操作会卡死UI。</p>
+<p>容易想到的解法是新开一个线程来执行高耗时操作，但js是单线程的，虽然浏览器为io操作提供了单独的线程，但主程序是不提供多线程特性的。</p>
+<p>HTML5提供了一个workaround是web worker，他允许新建一个worker来执行复杂的计算逻辑，该worker会跑在单独的线程。</p>
+<h1 id="問題発見">問題発見！</h1>
+<p>但在和react结合时发现了各种问题，解法也非常的诡异，这里先不探究原理，先记录下一种可用的方法。</p>
+<ol>
+<li>使用wokerize-loader模块，用yarn或npm安装即可</li>
+<li>import时的注意事项：<br>
+<img src="https://bonboru93.github.io/post-images/react-web-worker/import_comm.png" alt="" loading="lazy"><br>
+刚看readme的时候以为这个前缀是示例用的，后来才发现是修改webpack嵌入新增的loader，对webpack不甚了解。<br>
+后面这行注释不加会报错，这个报错的解法大部分是说要eject CRA，手动修改webpack的配置，这显然是很不便的。<br>
+这应该是第一次见到注释能起作用的语言了，比decorator还吊。</li>
+<li>woker的写法非常简单，只包含计算逻辑即可：<br>
+<img src="https://bonboru93.github.io/post-images/react-web-worker/woker_code.png" alt="" loading="lazy"></li>
+<li>wokerize会帮你包装好promise，import之后直接当作promise使用即可<br>
+<img src="https://bonboru93.github.io/post-images/react-web-worker/wokerize.png" alt="" loading="lazy"></li>
+<li>当然直接用promise是不行的，实测他还是跑在主线程</li>
+</ol>
+<h1 id="完整代码">完整代码</h1>
+<pre><code class="language-javascript">import React, { Component } from &quot;react&quot;;
+import worker from &quot;workerize-loader!./worker.js&quot;; // eslint-disable-line import/no-webpack-loader-syntax
+ 
+ 
+export default class App extends Component {
+  constructor() {
+    super();
+    this.worker = new worker();
+    this.state = {
+      count: 1,
+      data: &quot;init&quot;
+    };
+  }
+ 
+  componentDidMount = () =&gt; {
+    setInterval(() =&gt; {
+      this.setState({ count: this.state.count + 1 });
+    }, 1000);
+  };
+ 
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;div&gt;{this.state.count}&lt;/div&gt;
+        &lt;div&gt;{this.state.data}&lt;/div&gt;
+        &lt;button
+          onClick={async () =&gt; {
+            let result = await this.worker.expensive(10000000000);
+            this.setState({
+              data: result
+            });
+          }}
+        &gt;
+          use web worker
+        &lt;/button&gt;
+        &lt;button
+          onClick={() =&gt; {
+            new Promise(resolve =&gt; {
+              let count = 0;
+              for (let i = 0; i &lt;= 10000000000; i++) count += i;
+              resolve(count);
+            }).then(result =&gt; {
+              this.setState({
+                data: result
+              });
+            });
+          }}
+        &gt;
+          use promise
+        &lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+</code></pre>
+<p>这里在页面上创建了一个定时器，点击【use web worker】按钮定时器才不会卡住。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/FUiKpHbqb/" class="tag">
+                    js
+                  </a>
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/mongodb-shi-wan/">
+                  <h3 class="post-title">
+                    mongodb试玩
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

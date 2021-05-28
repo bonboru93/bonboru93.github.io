@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>tbf限速下发送速度对重传率的影响 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="测试目的
+在路由器上使用 tbf 进行限速，在服务器上调整不同的发送速度，观察对重传率的影响。
+测试过程
+利用三台虚拟机搭建测试环境，一台为服务器，一台为客户端，通过一台路由器连接。
+使用4系内核，cubic算法。
+首先在内核中添加注入点，..." />
+    <meta name="keywords" content="协议栈,基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">tbf限速下发送速度对重传率的影响</h2>
+            <div class="post-date">2019-09-26</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="测试目的">测试目的</h1>
+<p>在路由器上使用 tbf 进行限速，在服务器上调整不同的发送速度，观察对重传率的影响。</p>
+<h1 id="测试过程">测试过程</h1>
+<p>利用三台虚拟机搭建测试环境，一台为服务器，一台为客户端，通过一台路由器连接。</p>
+<p>使用4系内核，cubic算法。</p>
+<p>首先在内核中添加注入点，在连接结束时输出重传率。</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/tbf-rr/rr_code.png" alt="" loading="lazy"></figure>
+<pre><code class="language-c">void middle_on_destroy_sock(struct sock* sk)
+{
+    struct tcp_sock *tp = tcp_sk(sk);
+    if (tp-&gt;data_segs_out)
+        printk(&quot;data_segs_out = %u, total_retrans = %u, retrans_rate = %u\n&quot;,
+                tp-&gt;data_segs_out, tp-&gt;total_retrans, tp-&gt;total_retrans * 100 / tp-&gt;data_segs_out);
+}
+</code></pre>
+<p>在路由器上使用netem设定特定重传率值后打流，观察模块输出的重传率值是否相符，修改特定数值重复测试。</p>
+<figure data-type="image" tabindex="2"><img src="https://bonboru93.github.io/post-images/tbf-rr/drop.png" alt="" loading="lazy"></figure>
+<p>实测使用【total_retrans / data_segs_out】计算重传率是准确的。</p>
+<h1 id="正式实验">正式实验</h1>
+<p>然后正式开始实验，在路由器上通过tbf限定带宽为1mbit，也即最大发送速度128KB/S。</p>
+<figure data-type="image" tabindex="3"><img src="https://bonboru93.github.io/post-images/tbf-rr/rate.png" alt="" loading="lazy"></figure>
+<p>使用tinyhttp作为服务器，在发送时通过sleep和send的bytes数目来限制发送速度，例如限制发送速度为200KB/S：</p>
+<figure data-type="image" tabindex="4"><img src="https://bonboru93.github.io/post-images/tbf-rr/tiny.png" alt="" loading="lazy"></figure>
+<p>修改发送速度，在客户端上通过ab打流，观察重传率的变化，5次取均值：</p>
+<table>
+<thead>
+<tr>
+<th>发送速度(KB/s)</th>
+<th>重传率%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100</td>
+<td>0</td>
+</tr>
+<tr>
+<td>128</td>
+<td>0</td>
+</tr>
+<tr>
+<td>140</td>
+<td>22</td>
+</tr>
+<tr>
+<td>160</td>
+<td>28</td>
+</tr>
+<tr>
+<td>180</td>
+<td>31</td>
+</tr>
+<tr>
+<td>200</td>
+<td>30</td>
+</tr>
+<tr>
+<td>不限制</td>
+<td>30</td>
+</tr>
+</tbody>
+</table>
+<p>可以看到如果能通过上层应用将发送速度限定在tbf规定的带宽下，那么就不会有重传。超过限制带宽，重传率就会逐渐上涨，最后在本次的测试环境下最大为30%。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/R1zWwOM1V/" class="tag">
+                    协议栈
+                  </a>
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/tcp-yong-sai-kong-zhi-suan-fa-zong-jie/">
+                  <h3 class="post-title">
+                    TCP拥塞控制算法总结
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

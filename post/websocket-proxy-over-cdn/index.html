@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Websocket Proxy over CDN | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="之前一直稳定使用的自建proxy在月初的年度禁言日前后发现，只要有下载、视频等长连接就立即被阻断，幸而只是临时阻断，过几分钟后就恢复了。
+但反复几次后意识到，IP珍贵，各大廉价vps的IP已经基本被封干净了，一旦也被永封就难受了，因此下决心..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Websocket Proxy over CDN</h2>
+            <div class="post-date">2019-06-17</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/websocket-proxy-over-cdn.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>之前一直稳定使用的自建proxy在月初的<s>年度禁言日</s>前后发现，只要有下载、视频等长连接就立即被阻断，幸而只是临时阻断，过几分钟后就恢复了。</p>
+<p>但反复几次后意识到，IP珍贵，各大廉价vps的IP已经基本被封干净了，一旦也被永封就难受了，因此下决心探究一下利用CDN保护目标IP的proxy架设方法，也学习一下CDN的原理和操作。</p>
+<h1 id="websocket発見">Websocket発見！</h1>
+<p>早期在论坛闲逛时曾经了解过Websocket协议的实现，ws解决的是在client和server间双向传输的问题。</p>
+<p>最早的HTTP1.0在建好TCP连接之后只发送一个请求就断开，如果页面上有很多资源那就要逐个建立连接，非常浪费。HTTP1.1添加了keep-alive选项，允许复用一个连接来发送多个请求，但还是request-response的模型，也就是client发送一个请求，server针对这个请求做出响应。所以如果client想要实时得到某个状态的变化，就必须要定时轮询。</p>
+<p>Websocket解决了这个问题，他允许server主动向client发送数据，就像一个搭在HTTP上的socket一样。并且ws对http协议有良好的兼容性，包头与http保持一致，在握手时，使用upgrade：Websocket字段来标明是要求建立Websocket。</p>
+<p>这就启发我们是不是可以像传统的web server一样利用CDN来保护server IP，虽然Websocket传输的是实时消息，无法得到CDN的缓存加速，但CDN在保护源IP，防止DDOS攻击上也是非常重要的，我们恰好可以利用这一点。</p>
+<h1 id="精bai选piaocdn">精(bai)选(piao)CDN</h1>
+<p>首先买个域名，godaddy上.xyz/.info/.online这种垃圾后缀的域名都只要几块钱一年。</p>
+<p>再查一下CDN服务商，目前国内似乎还没有一家支持Websocket透传。世界上最大的CDN服务商Cloudflare有支持，且有免费的plan，于是注册之，并按照他的要求，将DNS解析权从godaddy变更到Cloudflare。</p>
+<p>但光有Websocket还不够，就像http一样，我们需要在ws上再套一层TLS加密来保护消息内容。获取证书就比较麻烦了，早期证书都是付费的，后来Let's Encrypt这种服务商出现了以后，免费的证书才渐渐铺开来。</p>
+<p>找到了一个支持http2且自带certbot的web服务器caddy，但试用后发现，他获取证书的流程是这样的：</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/init-blabla/howitworks_challenge.png" alt="" loading="lazy"></figure>
+<p>先生成一段密文，通过旁路通知Let's Encrypt这个密文，然后在本机打开web server，Let's Encrypt再通过域名访问这个web server完成验证。这样就能证明你的确拥有这个域名，可以签发证书给你。</p>
+<p>这个流程中开启的web server必须是80和443这种典型端口，我目前使用的vps并非我所有，我没有权力使用80和443口。查certbot官网看是否可以修改端口，发现：</p>
+<figure data-type="image" tabindex="2"><img src="https://bonboru93.github.io/post-images/init-blabla/port_allowed.png" alt="" loading="lazy"></figure>
+<p>至此一度陷入江局，以为只能放弃了。</p>
+<p>但再想，在搭建proxy时使用TLS的首要目的是obfuscation，而不是严格加密，是否可以不申请CA签发的证书而采用自签发证书？只要我们自己的proxy client不做校验，认这个证书就可以了。</p>
+<p>但要想通过CDN，必须先查一下Cloudflare是否只是支持在回源的时候使用自签发证书。查到了Cloudflare目前支持一下几种SSL模式：</p>
+<figure data-type="image" tabindex="3"><img src="https://bonboru93.github.io/post-images/init-blabla/cfssl_flexible.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://bonboru93.github.io/post-images/init-blabla/cfssl_full.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://bonboru93.github.io/post-images/init-blabla/cfssl_strict.png" alt="" loading="lazy"></figure>
+<p>client和CDN通信时都是正常的。其中Flexible模式支持回源时就使用plain http，那就先试用一下这个模式吧。</p>
+<p>在Cloudflare中添加一个类似正常网页的二级域名page.xxx.online，配好解析，然后在vps开一个simplehttpserver来测试一下连通性。Boom，失败。</p>
+<p>一想不对，我的server开在非典型端口上，CDN怎么知道是哪个？要是CDN回源时只支持典型端口那就又完蛋了。</p>
+<p>怀着忐忑心情查了一下：</p>
+<blockquote>
+<p><strong>Which ports will Cloudflare work with?</strong></p>
+<p>The HTTP ports that Cloudflare support are:<br>
+80<br>
+8080<br>
+8880<br>
+2052<br>
+2082<br>
+2086<br>
+2095</p>
+<p>The HTTPs ports that Cloudflare support are:<br>
+443<br>
+2053<br>
+2083<br>
+2087<br>
+2096<br>
+8443</p>
+</blockquote>
+<p>还好，除了80和443，其他几个端口我还是有权限使用的。</p>
+<p>重新绑定端口再试，Boom，失败。</p>
+<p>再查，发现flexible这种模式只支持从443到80的转换，也就是client到CDN走443，CDN回源走80。</p>
+<p>还好这个问题并不致命，默认的flexible模式本身就不安全，他虽然能在client显示SSL，但回源是plain http。</p>
+<p>那就不用http测连通性，直接上SSL。不带strict的full模式在回源的时候不校验证书的有效性，用这个模式加自签发证书就可以了。</p>
+<p>但是到这一步有一个问题困扰了我，如果我的server用的是自签发证书，那么如何做到client通过CDN连接时显示一个CA签发给我的合法证书？以前咨询过的结果是CDN是要求客户上传证书的。难道是因为Cloudflare是知名CDN服务商，所以和某个CA有py交易，可以不做校验就当中间人，替任意网站申请证书？细思恐极。</p>
+<p>思考无果，也没找到相关资料，无奈上stack exchange提问，得到了大神回复：</p>
+<blockquote>
+<p><strong>How can Cloudflare offer a valid certificate of our website to client?</strong></p>
+<p>There is no mitm; you point DNS to Cloudflare so they are the authoritative domain.</p>
+</blockquote>
+<p>豁然开朗，DNS解析权！</p>
+<p>域名所有权的认证除了在server上保存要求的密文以外，还可以通过将密文写入DNS的TXT记录的方式来证明你拥有该域名。而在注册Cloudflare时，不同于其他CDN只要求一条CNAME记录，他向我们要求了DNS的解析权。也就是说证书获取的全过程，在授予Cloudflare解析权的同时就自动完成了。之前在查阅certbot官网时也提示了还有DNS Authentication方法，但是当时折腾改端口花了太多时间了，有点心累，没有再往下查。</p>
+<p>至此所有的疑问就解开了，剩下就是实做了。</p>
+<h1 id="那就搞起啊">那就搞起啊</h1>
+<p>利用gost这个开源项目，他支持多种proxy protocol，使用mwss模式即可选用带多路复用的Websocket proxy over SSL，且生成自签发证书。client中从vps IP改为域名就完成了。这里开启多路复用的原因在于Cloudflare的免费plan虽然没有明确表示有限速，但有明确表示限连接数。</p>
+<p>配置完成后，测试走普通http的结果，给出了一个类404页面，这在obfuscation方面比直接发RESET要好。</p>
+<figure data-type="image" tabindex="6"><img src="https://bonboru93.github.io/post-images/init-blabla/404.png" alt="" loading="lazy"></figure>
+<p>查看证书信息，的确是签发给我的，且使用的是更先进的ECDSA算法，曲线是secp256r1，非传统的RSA，赞。</p>
+<figure data-type="image" tabindex="7"><img src="https://bonboru93.github.io/post-images/init-blabla/cert.png" alt="" loading="lazy"></figure>
+<p>但需要注意的是，通过CDN中转的确能起到保护server IP的作用，但是否加速是不确定的。要看运营商的出国线路、解析到的CDN所在线路和vps的所在线路。比如联通和电信的出国直连线路很多，移动则一律绕香港。可以通过traceroute来查看线路，如果之前到vps是走直连，那么经CDN中转后大概率只会更慢，不会更快。</p>
+<p>完结撒花～</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

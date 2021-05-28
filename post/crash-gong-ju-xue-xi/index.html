@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>crash工具学习 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="pre
+首先编译的时候建议加上-O0参数关掉编译优化，这样调用栈才显示的完全
+常用命令
+extend
+官方wiki：https://crash-utility.github.io/help_pages/extend.html
+加载为cras..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">crash工具学习</h2>
+            <div class="post-date">2020-05-13</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/crash-gong-ju-xue-xi.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="pre">pre</h1>
+<p>首先编译的时候建议加上-O0参数关掉编译优化，这样调用栈才显示的完全</p>
+<h1 id="常用命令">常用命令</h1>
+<h2 id="extend">extend</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/extend.html">https://crash-utility.github.io/help_pages/extend.html</a></p>
+<p>加载为crash工具编写的功能扩展</p>
+<p>扩展的代码格式可以类比proc，首先要有一个command table:</p>
+<pre><code class="language-c">struct command_table_entry {
+            char *name;
+            cmd_func_t func;
+            char **help_data,
+            ulong flags;
+    };
+</code></pre>
+<p>其中包括命令的名字，实际执行的代码，帮助信息，以及一个标志位，标志位包含REFRESH_TASK_TABLE和MINIMAL两个bit，具体用途还不明确。</p>
+<p>下面是一个范例扩展，实现了和echo命令相同的功能：</p>
+<pre><code class="language-c">#include &quot;defs.h&quot;      /* From the crash source top-level directory */
+
+
+
+void echo_init(void);    /* constructor function */
+void echo_fini(void);    /* destructor function (optional) */
+
+void cmd_echo(void);     /* Declare the commands and their help data. */
+char *help_echo[];
+
+static struct command_table_entry command_table[] = {
+        { &quot;echo&quot;, cmd_echo, help_echo, 0},          /* One or more commands, */
+        { NULL },                                     /* terminated by NULL, */
+};
+
+
+void __attribute__((constructor))
+echo_init(void) /* Register the command set. */
+{ 
+        register_extension(command_table);
+}
+ 
+/* 
+ *  This function is called if the shared object is unloaded. 
+ *  If desired, perform any cleanups here. 
+ */
+void __attribute__((destructor))
+echo_fini(void) { }
+
+
+/* 
+ *  Arguments are passed to the command functions in the global args[argcnt]
+ *  array.  See getopt(3) for info on dash arguments.  Check out defs.h and
+ *  other crash commands for usage of the myriad of utility routines available
+ *  to accomplish what your task.
+ */
+void
+cmd_echo(void)
+{
+        int c;
+
+        while ((c = getopt(argcnt, args, &quot;&quot;)) != EOF) {
+                switch(c)
+                {
+                default:
+                        argerrs++;
+                        break;
+                }
+        }
+
+        if (argerrs)
+                cmd_usage(pc-&gt;curcmd, SYNOPSIS);
+
+        while (args[optind]) 
+                fprintf(fp, &quot;%s &quot;, args[optind++]);
+
+        fprintf(fp, &quot;\n&quot;);
+}
+
+/* 
+ *  The optional help data is simply an array of strings in a defined format.
+ *  For example, the &quot;help echo&quot; command will use the help_echo[] string
+ *  array below to create a help page that looks like this:
+ * 
+ *    NAME
+ *      echo - echoes back its arguments
+ *
+ *    SYNOPSIS
+ *      echo arg ...
+ *
+ *    DESCRIPTION
+ *      This command simply echoes back its arguments.
+ *
+ *    EXAMPLE
+ *      Echo back all command arguments:
+ *
+ *        crash&gt; echo hello, world
+ *        hello, world
+ *
+ */
+ 
+char *help_echo[] = {
+        &quot;echo&quot;,                        /* command name */
+        &quot;echoes back its arguments&quot;,   /* short description */
+        &quot;arg ...&quot;,                     /* argument synopsis, or &quot; &quot; if none */
+ 
+        &quot;  This command simply echoes back its arguments.&quot;,
+        &quot;\nEXAMPLE&quot;,
+        &quot;  Echo back all command arguments:\n&quot;,
+        &quot;    crash&gt; echo hello, world&quot;,
+        &quot;    hello, world&quot;,
+        NULL
+};
+</code></pre>
+<h2 id="log">log</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/log.html">https://crash-utility.github.io/help_pages/log.html</a></p>
+<p>常用命令，输出panic之前dmesg的内容</p>
+<p>有如下选项，作用不太大：<br>
+<img src="https://bonboru93.github.io/post-images/crash-learn/log.png" alt="" loading="lazy"></p>
+<h2 id="rd">rd</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/rd.html">https://crash-utility.github.io/help_pages/rd.html</a></p>
+<p>输出某段内存的内容，可以接受地址或记号，可能需要配合其他工具中找出的地址来使用</p>
+<p>接受两个参数，一个地址或记号，另一个长度，示例：<br>
+<img src="https://bonboru93.github.io/post-images/crash-learn/rd1.png" alt="" loading="lazy"><br>
+常用选项：</p>
+<p>按多少位分割：<br>
+<img src="https://bonboru93.github.io/post-images/crash-learn/rd2.png" alt="" loading="lazy"><br>
+-s：如果数值是一个地址，显式的表示出来</p>
+<p>-S：如果数值是一个地址，且是由slab分配的，输出slab的名字</p>
+<p>-SS：如果数值是一个地址，且是由slab分配的，输出slab的名字和地址</p>
+<h2 id="task">task</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/task.html">https://crash-utility.github.io/help_pages/task.html</a></p>
+<p>输出某个进程的task_struct和thread_info结构</p>
+<p>可以输入pid，如果不输入默认就显示core的那个那个task</p>
+<p>示例：<br>
+<img src="https://bonboru93.github.io/post-images/crash-learn/task.png" alt="" loading="lazy"></p>
+<h2 id="alias">alias</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/alias.html">https://crash-utility.github.io/help_pages/alias.html</a></p>
+<p>指定或输出crash工具中使用的命令别名</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/crash-learn/alias.png" alt="" loading="lazy"></figure>
+<p>可以看到内建的不少命令是和原始的命令对应的</p>
+<h2 id="bt">bt</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/bt.html">https://crash-utility.github.io/help_pages/bt.html</a></p>
+<p>输出panic位置的调用栈</p>
+<p>常用选项：</p>
+<p>-c 选取的cpu：输出panic时所有cpu的调用栈</p>
+<p>-l：一次性输出调用栈上所有函数的代码位置</p>
+<p>-FF：重要选项，显示调用栈的所有内容，可以据此检查传递给函数的参数以及函数的局部变量</p>
+<p>64位寄存器传参：</p>
+<figure data-type="image" tabindex="2"><img src="https://bonboru93.github.io/post-images/crash-learn/register.png" alt="" loading="lazy"></figure>
+<p>栈结构：</p>
+<figure data-type="image" tabindex="3"><img src="https://bonboru93.github.io/post-images/crash-learn/stack.png" alt="" loading="lazy"></figure>
+<p>编写一个会panic的范例模块验证效果：</p>
+<pre><code class="language-c">#include &lt;linux/kernel.h&gt;
+#include &lt;linux/module.h&gt;
+
+
+static int layer3(int a)
+{
+    int ia = 888, ib = 999;
+    a = a / (ia - 888);
+    printk(&quot;crash_test=%d\n&quot;, a);
+    return ia + ib;
+}
+
+static int layer2(int a, int b)
+{
+    return layer3(111);
+}
+
+static int layer1(int a, int b, int c)
+{
+    int ia = 666, ib = 777;
+    layer2(456, 789);
+    return ia + ib;
+}
+
+static int __init bbu_init(void)
+{
+    layer1(1, 2, 3);
+    return 0;
+}
+static void __exit bbu_exit(void)
+{
+}
+module_init(bbu_init);
+module_exit(bbu_exit);
+</code></pre>
+<p>结果：</p>
+<figure data-type="image" tabindex="4"><img src="https://bonboru93.github.io/post-images/crash-learn/bt2.png" alt="" loading="lazy"></figure>
+<p>-v ：自动检查是否有栈溢出</p>
+<figure data-type="image" tabindex="5"><img src="https://bonboru93.github.io/post-images/crash-learn/bt3.png" alt="" loading="lazy"></figure>
+<h2 id="net">net</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/net.html">https://crash-utility.github.io/help_pages/net.html</a></p>
+<p>输出当时的网卡配置</p>
+<figure data-type="image" tabindex="6"><img src="https://bonboru93.github.io/post-images/crash-learn/net.png" alt="" loading="lazy"></figure>
+<h2 id="kmem">kmem</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/kmem.html">https://crash-utility.github.io/help_pages/kmem.html</a></p>
+<p>常用选项：</p>
+<p>-i： 输出内存总体情况</p>
+<figure data-type="image" tabindex="7"><img src="https://bonboru93.github.io/post-images/crash-learn/kmem1.png" alt="" loading="lazy"></figure>
+<p>-s：输出slab的使用情况</p>
+<figure data-type="image" tabindex="8"><img src="https://bonboru93.github.io/post-images/crash-learn/kmem2.png" alt="" loading="lazy"></figure>
+<h2 id="sys">sys</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/sys.html">https://crash-utility.github.io/help_pages/sys.html</a></p>
+<p>输出系统信息，范例：</p>
+<figure data-type="image" tabindex="9"><img src="https://bonboru93.github.io/post-images/crash-learn/sys.png" alt="" loading="lazy"></figure>
+<h2 id="struct">struct</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/struct.html">https://crash-utility.github.io/help_pages/struct.html</a></p>
+<p>根据给出的结构体和地址，显示具体内容</p>
+<figure data-type="image" tabindex="10"><img src="https://bonboru93.github.io/post-images/crash-learn/struct1.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://bonboru93.github.io/post-images/crash-learn/struct2.png" alt="" loading="lazy"></figure>
+<h2 id="timer">timer</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/timer.html">https://crash-utility.github.io/help_pages/timer.html</a></p>
+<p>显示当时的定时器信息</p>
+<figure data-type="image" tabindex="12"><img src="https://bonboru93.github.io/post-images/crash-learn/timer.png" alt="" loading="lazy"></figure>
+<h2 id="whatis">whatis</h2>
+<p>官方wiki：<a href="https://crash-utility.github.io/help_pages/whatis.html">https://crash-utility.github.io/help_pages/whatis.html</a></p>
+<p>输出结构体的定义和大小。</p>
+<p>加参数 -o [内存地址] 可以得出结构体各成员的相对偏移</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/lesslessopenresty-wan-quan-kai-fa-zhi-nan-greatergreater-du-shu-bi-ji/">
+                  <h3 class="post-title">
+                    《Openresty完全开发指南》读书笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

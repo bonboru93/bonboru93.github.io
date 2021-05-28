@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《深入浅出nodejs》读书笔记  | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+
+查看内存占用
+
+
+
+堆外内存和buffer
+
+
+
+
+模块内存
+
+
+
+几个内存泄漏的例子
+a. callback使用不当
+
+每次请求都会向redis client注册一个回调函数，redis client对象是全局的
+b. console..." />
+    <meta name="keywords" content="读书笔记,基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《深入浅出nodejs》读书笔记 </h2>
+            <div class="post-date">2020-07-01</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/lesslessshen-ru-qian-chu-nodejsgreatergreater-du-shu-bi-ji.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <ol>
+<li>
+<p>查看内存占用<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/mem.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>堆外内存和buffer<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/out1.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/out2.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>模块内存<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/module.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>几个内存泄漏的例子</p>
+<p>a. callback使用不当<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/callback.png" alt="" loading="lazy"><br>
+每次请求都会向redis client注册一个回调函数，redis client对象是全局的</p>
+<p>b. console.log是异步的，会创建闭包<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/clg.png" alt="" loading="lazy"><br>
+这意味着主线程的for循环执行完后会烧掉1e9个闭包</p>
+</li>
+<li>
+<p>使用heapdump排查内存泄漏：<a href="https://www.npmjs.com/package/heapdump">https://www.npmjs.com/package/heapdump</a></p>
+</li>
+<li>
+<p>buffer的内存分配<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/buffer_mem.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>buffer拼接引起的乱码<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/cat.png" alt="" loading="lazy"><br>
+<strong>解决方法：</strong><br>
+a. setEncoding<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/setencoding.png" alt="" loading="lazy"><br>
+b. 手动拼接buffer<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/mal_buf.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>句柄传递<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/handle.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/handle2.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/handle3.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>单元测试，TDD、BDD：https://zhuanlan.zhihu.com/p/91136759<br>
+<img src="https://bonboru93.github.io/post-images/deep-node-learn/test.jpg" alt="" loading="lazy"></p>
+</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/L05iEcRPF/" class="tag">
+                    读书笔记
+                  </a>
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/dockerfile-shi-wan/">
+                  <h3 class="post-title">
+                    Dockerfile试玩
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

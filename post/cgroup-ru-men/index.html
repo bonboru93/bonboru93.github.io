@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>cgroup入门 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="基本概念
+
+
+子系统
+子系统其实指的就是CPU、内存、网络这样的资源，其实和“系统”没什么关系，也没有父系统。
+
+
+任务（task）
+指的就是进程。
+
+
+层级（hierarchy）
+
+
+cgroup按照树状结构来对资源进行层层限制，层级可以..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">cgroup入门</h2>
+            <div class="post-date">2020-02-25</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/cgroup-ru-men.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="基本概念">基本概念</h1>
+<ul>
+<li>
+<p>子系统</p>
+<p>子系统其实指的就是CPU、内存、网络这样的资源，其实和“系统”没什么关系，也没有父系统。</p>
+</li>
+<li>
+<p>任务（task）</p>
+<p>指的就是进程。</p>
+</li>
+<li>
+<p>层级（hierarchy）</p>
+<ol>
+<li>
+<p>cgroup按照树状结构来对资源进行层层限制，层级可以理解为资源树上的节点，兄弟节点间分享父节点的资源。</p>
+</li>
+<li>
+<p>一颗资源树通常就控制一种资源，当然也可以同时控制多种，但不能出现一种资源同时被多颗资源树控制的情况。</p>
+</li>
+<li>
+<p>如果系统发现你意图新建的资源树所要控制的资源列表和现有的某颗旧树<strong>完全一致</strong>，则会自动删除旧树。</p>
+</li>
+<li>
+<p>如果系统发现你意图新建的资源树所要控制的资源列表和现有的某颗旧树<strong>部分重叠</strong>，则会返回错误，原因见（2）。</p>
+</li>
+<li>
+<p>根据（2）和（3）我们可以得出，每一种资源最终都会收敛到一个树根上，这也符合资源分配工作的需要。</p>
+</li>
+<li>
+<p>对某个进程进行某种资源的限制，就要把该进程加入到<strong>控制该种资源</strong>的<strong>树</strong>的<strong>节点</strong>的<strong>进程列表</strong>中。在一颗资源树下，进程只能属于其中的一个节点，当你将进程移动到新的节点时，旧节点下的进程列表会自动去掉该进程。</p>
+</li>
+<li>
+<p>以上几点是我根据内核的cgroup Document和部分源码分析得出的，在网上和一些课本里介绍层级时，他们通常会摆出如下规则：</p>
+<ul>
+<li>同一个层级可以附加一个或多个子系统</li>
+<li>一个子系统可以附加到多个层级，当且仅当目标层级只有唯一一个子系统</li>
+<li>一个任务不能存在于同一个层级的不同cgroup中，但可以存在于不同层级的cgroup中</li>
+</ul>
+<p>其实道理是一样的，但我第一次看到上述规则的时候完全不明所以。这部分的名词（子系统、层级、附加）本身就不是很直观，再加上一个不想让你看懂的装逼学院派，以及一群复制黏贴水文章的博主，你就知道到头来还不如看源码去了XD。</p>
+</li>
+</ol>
+</li>
+</ul>
+<h1 id="使用方法">使用方法</h1>
+<ul>
+<li>
+<p>对cgroup的操作通过挂载一个cgroup类型的文件系统（-t cgroup）来实现，在挂载的同时需要指定所要控制的资源类型（-o xxx）：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/mount.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>systemd提供了对cgroup的支持，在系统启动时会读取出所有的子系统（资源），并为每一个子系统创建一个根层级（资源树根），在cgroup文件系统中用一个目录来代表一个层级（资源树节点），根层级（资源树根）的目录名就和他所控制的子系统（资源）的名字相同，处于/sys/fs/cgroup下：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/fs.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>进入某个目录，可以看到如下的文件。包含对所控制的子系统（资源）的具体限制数值（如：对cpu来说有cpu.shares, cpu.usage等），以及一个任务列表（tasks文件），还有若干子目录<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/sub.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>每一个子目录都代表一个该层级的一个子层级（该资源树节点的子节点），新建一个目录也就等价于新增子层级（子节点）。进入子目录，可以看到目录中自动出现了和父目录相同的文件：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/sub_files.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>常用命令<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/cmd1.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/cmd2.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/cmd3.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>systemd会在所有默认创建的目录下建立xxx.slice和xxx.scope的子目录。</p>
+<ol>
+<li>这里需要解释一下systemd的管理单元：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/unit.png" alt="" loading="lazy"><br>
+service是我们比较熟悉的，target的可以类比init命令中的各种数值代表的状态，scope和slice其实和service类似，都代表一个进程组，一个scope通常对应一个虚拟机或者一个容器，slice本身不直接包含进程，而是包含scope和service，例如system.slice就包含了所有的系统service。</li>
+<li>使用命令lscgroup可以看到每个子系统（资源）所对应的目录下面都有system.slice这一目录，该目录下又包含了具体的service：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/service.png" alt="" loading="lazy"></li>
+<li>slice可以被临时创建，并在其中直接启动一个程序，创建后会systemd会自动将其加入到默认创建的目录中去：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/slice.png" alt="" loading="lazy"></li>
+</ol>
+</li>
+</ul>
+<h1 id="数据结构">数据结构</h1>
+<p>从上述的基本概念和使用方法中，我们可以看到要实现资源限制，最基本的是要在子系统、层级和任务之间建立起关联，这里重点关注这部分的数据结构。</p>
+<p><strong>为了直观，以下描述中会以“资源”代替“子系统”，以“资源树”代替“层级”，以“进程”代替“任务”。</strong></p>
+<ul>
+<li>先贴一张较为笼统的关系图：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/relation.png" alt="" loading="lazy">
+<ol>
+<li>从资源树出发，向上对应的是该资源树所管理的资源，例如cpu_cgrp控制了cpu和cpuacct两种资源，memory_cgrp控制了内存资源。</li>
+<li>从资源树出发，向下对应的是该资源树所控制的进程，由于资源限制模型并不会太多，因此将有相同资源限制配置的进程集合在了一起形成了css_set。</li>
+<li>这里的css全称是cgroup subsystem state。既然要对进程做资源限制，肯定需要挨个资源的去查具体的限制数值，因此需要这样一个数据结构。而css_set就是把所有的资源限制集合在一起，这样一来，有着相同资源配置的进程就可以归到一个css_set中去。</li>
+<li>这里可能会有一个疑问，既然进程属于某个资源树节点，为什么不直接保存到节点的指针呢？因为一颗资源树可能控制多种资源，所以我们要归类到资源，而不是归类资源树节点。</li>
+<li>css_set结构中有一个数组用于保存所有的css，长度等于系统中所有已注册的资源：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/css_set.png" alt="" loading="lazy"></li>
+<li>css结构中有一个cgroup指针，对应到指定的资源树节点：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/subsys.png" alt="" loading="lazy"></li>
+</ol>
+</li>
+<li>再来看详细的数据结构关系图：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/relation_detail.png" alt="" loading="lazy"><br>
+这里我们走几个常用的关联路线来理解这些数据结构之间的关系：
+<ol>
+<li>
+<p>从一个进程出发，找到它属于哪些资源树节点：</p>
+<p>a. 从task_struct出发，用cgroups指针找到其所属的css_set</p>
+<p>b. 用css_set中的cg_links找到中转数据结构<strong>cg_cgroup_link</strong>。由于进程会属于多个资源树节点，资源树节点下会也有多个进程，因此进程和资源树节点是多对多的关系。cg_cgroup_link数据结构就起到了关联作用，可以理解为上图中的这个linkage：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/linkage.png" alt="" loading="lazy"><br>
+其中的cgrp指针向右指向资源树节点，cg指针向左指向css_set。</p>
+<p>与之相对应的，cgrp_link_list链表是从进程出发向右找资源树节点时需要遍历的列表。而cg_link_list就是从资源树节点出发向左找进程时需要遍历的列表。这里面的变量命名非常的混乱，如果要魔改一定要看清楚了。</p>
+<p>c. 遍历完cgrp_link_list就找到了所有的资源树节点。</p>
+</li>
+<li>
+<p>从一个资源树节点出发，找到它所管理的所有进程：</p>
+<p>a. 从cgroup结构出发，用css_sets指针找到中转数据结构cg_cgroup_link。如（1）中所属，cg_cgroup_link中的cg指针向左指向css_set。与之相对应的，cg_link_list就是从资源树节点出发向左找进程时需要遍历的列表。</p>
+<p>b. 遍历完cg_link_list就找到了所有的css_set节点。</p>
+<p>c. 再遍历css_set中的tasks链表就找到了所有的进程。</p>
+</li>
+<li>
+<p>从一个进程出发，找到每一种资源受怎样的限制：</p>
+<p>a. 从task_struct出发，用cgroups指针找到其所属的css_set</p>
+<p>b. css_set结构中的subsys数组长度等于资源数目的总和，每个数组项指向一个css结构。每个css结构中又保存了一个cgroup的指针</p>
+<p>c. 遍历subsys数组即可找到所有的资源树节点，进而读取具体的资源限制数值</p>
+</li>
+<li>
+<p>css_set的哈希：</p>
+<p>a. 既然一个css_set代表一种资源配置，那么当我们要对进程进行资源配置时，就要把进程的配置和已有的css_set的配置进行匹配，如果匹配成功，则进程加入对应css_set，否则新建一个css_set。同理，如果要更改进程的资源配置时，就要找出差异配置，重新进行匹配。</p>
+<p>b. 那么如何匹配两种不同配置呢？或者说每个css_set的特征码是什么？如（3）中所述，我们可以从css_set中的subsys数组出发找全每种资源所对应的资源树节点，注意，由于一个资源树可能控制多种资源，所以可能出现subsys数组下的不同资源关联到同一个资源树节点的情况。</p>
+<p>c. 既然我们通过subsys数组找全了所有的资源配置，那么把subsys数组的所有指针做哈希，就可以得到一种资源配置的特征码，从而把匹配不同资源配置的工作转化成了比较该特征码。</p>
+<p>来看一个切换资源树节点，并匹配新css_set的代码：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/find_css.png" alt="" loading="lazy"><br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/find_css2.png" alt="" loading="lazy"><br>
+这个函数的作用是当我们要将一个进程加入新的资源树节点上时，从该进程所属的旧的css_set出发，找出差异的资源配置，计算新的配置特征码，再和现有css_set们做匹配，看要把该进程移动到哪个当中去。</p>
+<p>函数的输入分别是：old_cset（目前进程所述的css_set），cgrp（要加入的资源树节点），template（临时的subsys配置串，用于计算特征码）</p>
+<p>具体操作：</p>
+<ul>
+<li>由于每种资源都会随着控制它的资源树节点最后收敛到树根，因此当我们要加入一个新的资源树节点时，把该节点对应的树根找出来，就可以知道有多少种资源配置发生了变化，又有多少种资源是不变的。在上述源码中，root就指向树根。</li>
+<li>遍历old_cset下的subsys数组，如果某种资源对应的资源树节点的树根和要加入的资源树节点的树根相同，说明该资源的配置将被新的资源树节点下的配置覆盖，这时候临时配置串template的对应位置就记为新的资源树节点对应的css。这里又有一个比较绕的地方，资源树节点（cgroup结构体）中也有一个subsys数组，这是怎么回事呢？别忘了一颗资源树可能控制多种资源，所以如果该资源树控制了某种资源，那么其对应的cgroup结构体中的subsys数组中的对应该资源的位置就是有值的，否则是null。这里的cgroup_e_css函数就是输入一个资源树节点和特定资源，返回该接节点下对应该资源的css结构，如果没有控制，则返回null。</li>
+<li>相反的，如果某种资源对应的资源树节点的树根和要加入的资源树节点的树根不同，说明该资源的配置没有变化，这时候临时配置串template的对应位置就维持旧的资源树节点对应的css。</li>
+<li>完成遍历，对生成的临时配置串template做哈希。</li>
+<li>查找css_set表，看有没有和template匹配的css_set，有则返回，无则返回null。</li>
+<li>如果有找到匹配的css_set，则将进程加入它，没有，后续还有新建一个css_set的操作。</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<h1 id="实战1使用net_cls子系统">实战1：使用net_cls子系统</h1>
+<p>在cgroup中net_cls代表网络资源，但实际上限速并没有在cgroup内部实现，而是依赖tc来完成。</p>
+<p>具体方法是我们在net_cls子系统中配置一个classid，再配置tc过滤器识别该classid，从而实现分类限速。因此这个classid的格式和tc是完全一致的，由一个主序号和一个从序号组成：</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/cgroup-intro/net_cls.png" alt="" loading="lazy"></figure>
+<p>而后向tc中支持分类的队列（cbq、htb等）添加handle号为cgroup的过滤器即可：</p>
+<figure data-type="image" tabindex="2"><img src="https://bonboru93.github.io/post-images/cgroup-intro/tc.png" alt="" loading="lazy"></figure>
+<h1 id="实战2网络限速子系统源码分析">实战2：网络限速子系统源码分析</h1>
+<p>利用cgroup可以做一个专门用来限速的子系统。是的你没有看错，通过魔改内核，我们可以添加了一个和cpu、内存、磁盘io相并列的子系统。主要包括这几个部分的代码：</p>
+<ul>
+<li>
+<p>向cgroup_subsys.h文件添加宏，以注册子系统：</p>
+<figure data-type="image" tabindex="3"><img src="https://bonboru93.github.io/post-images/cgroup-intro/tcp_register.png" alt="" loading="lazy"></figure>
+<p>可以看到该文件中还有cpu、memory、io、net_cls等我们熟悉的子系统</p>
+</li>
+<li>
+<p>追下去看你会发现这个SUBSYS的宏实际上就是在子系统名的后面跟了_cgrp_id来形成id：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/cgid.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>按照cgroup的要求，我们要为每个子系统建立一个cgroup_subsys结构体：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/cgroup_subsys.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>其中包含了建立对应css时的初始化操作、删除操作，还有最关键的是该子系统下有哪些可配置项目，也就是像我们在cpu子系统中看到cpu.shares, cpu.usage等。<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/conf.png" alt="" loading="lazy"><br>
+这些配置项会以文件的形式出现在cgroup文件系统中控制tcp_throt资源的资源树节点对应的目录下</p>
+</li>
+<li>
+<p>具体的限速方法是通过在netfilter中注册hook点的形式完成：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/netfilter.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>接下来我们重点来看一下在hook点中怎样从一个skb出发最终找到资源树节点并读取限速值</p>
+<ol>
+<li>首先，通过skb找到对应的应用层socket，再关联到进程的tgid：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/sock2id.png" alt="" loading="lazy"></li>
+<li>使用内核提供的函数找到进程的task_struct：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/tsk.png" alt="" loading="lazy"></li>
+<li>再传入子系统所注册的id来查找css结构：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/find_cgid.png" alt="" loading="lazy"></li>
+<li>这里的task_css是cgroup提供的函数，给出进程的task_struct指针，子系统的id编号，就会返回css结构。</li>
+<li>然后再通过container_of宏找到包装了通用css结构的我们子系统自己的css结构：<br>
+<img src="https://bonboru93.github.io/post-images/cgroup-intro/own_css.png" alt="" loading="lazy"></li>
+<li>这种包装方法见过多次了，算是在c语言里实现了一部分继承的效果。这里这样用也不难理解，每个子系统都会有各自不同的配置，但他们都将通用的css结构包在里面，可以看到我们的css里限速所需的几个数值。</li>
+<li>到此，我们就完成了从一个skb出发找到限速值的任务。</li>
+</ol>
+</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/kpatch-yuan-li-xue-xi/">
+                  <h3 class="post-title">
+                    kpatch原理学习
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

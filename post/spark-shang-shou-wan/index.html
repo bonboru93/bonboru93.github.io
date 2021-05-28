@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>spark上手玩 | Bonboru93の</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://bonboru93.github.io/favicon.ico?v=1622180375557">
+<link rel="stylesheet" href="https://bonboru93.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="部署方式
+参考：https://blog.csdn.net/Realoyou/article/details/80398424
+spark有三种主要的部署方式，local、standalone和yarn。
+
+local模式是使用线程来模拟s..." />
+    <meta name="keywords" content="基术" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://bonboru93.github.io">
+        <img src="https://bonboru93.github.io/images/avatar.png?v=1622180375557" class="site-logo">
+        <h1 class="site-title">Bonboru93の</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="https://bonboru93.github.io/post/one-line-reference" class="site-nav">
+            ONE LINE REFERENCE
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      この片隅に
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://bonboru93.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">spark上手玩</h2>
+            <div class="post-date">2020-08-11</div>
+            
+              <div class="feature-container" style="background-image: url('https://bonboru93.github.io/post-images/spark-shang-shou-wan.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="部署方式">部署方式</h1>
+<p>参考：<a href="https://blog.csdn.net/Realoyou/article/details/80398424">https://blog.csdn.net/Realoyou/article/details/80398424</a></p>
+<p>spark有三种主要的部署方式，local、standalone和yarn。</p>
+<ul>
+<li>local模式是使用线程来模拟spark的worker，最适合跑测试。</li>
+<li>standalone就是自己安排master和worker。</li>
+<li>yarn是集群管理，没法拿来做测试。</li>
+</ul>
+<h1 id="run-example">run-example</h1>
+<p>run-example命令后指定要跑的class<br>
+注意自带的example都是编译好的已经，直接改example目录下的源码是不生效的，要重新编译后用spark-submit来跑。</p>
+<h1 id="docker安装spark">docker安装spark</h1>
+<p>使用bitnami提供的docker compose文件：</p>
+<figure data-type="image" tabindex="1"><img src="https://bonboru93.github.io/post-images/spark-intro/docker.png" alt="" loading="lazy"></figure>
+<p>可以看到他安排了一个master和两个worker，测试用我选择去掉一个。</p>
+<p>然后我机器上的docker执行这个compose的话会报错无法创建一个新的子网。因为用compose安排镜像的话默认会创建一个子网和其他的容器隔离开来。在master和worker里都加入【network: bridge】可以挂到默认网桥上去，但是这样改了之后就没法用容器的名字做路由了（看第29行），需要把暴露端口，并且把名字改成宿主机的IP。</p>
+<p>这样搞完了之后容器能够起来了，但是报无法移动文件夹相关的错误。查了google和github的issue，没有解决，放弃。</p>
+<h1 id="直接local安装">直接local安装</h1>
+<p>从spark官网下载程序包，其中的run-example、spark-submit等命令在不添加–master参数的时候默认就以local模式运行，适合做测试。</p>
+<p>要注意要求的java版本为1.8，开发机自带的是1.6，使用jumbo安装maven时依赖的也是1.6，要手动安装jumbo上提供的1.8版本，并指定path和java_home。</p>
+<h1 id="编译spark提供的example">编译spark提供的example</h1>
+<p>从spark官网下载源码包，注意不要从github clone，那个不行。</p>
+<p>使用idea打开，选择maven工程，从project structure更换jdk为1.8。</p>
+<figure data-type="image" tabindex="2"><img src="https://bonboru93.github.io/post-images/spark-intro/jdk.png" alt="" loading="lazy"></figure>
+<p>打开右侧的maven选项卡，下载依赖。</p>
+<figure data-type="image" tabindex="3"><img src="https://bonboru93.github.io/post-images/spark-intro/maven.png" alt="" loading="lazy"></figure>
+<p>从project structure选择artifacts，加号，jar，from modules</p>
+<figure data-type="image" tabindex="4"><img src="https://bonboru93.github.io/post-images/spark-intro/jar.png" alt="" loading="lazy"></figure>
+<p>选择example包，main class可以留空</p>
+<figure data-type="image" tabindex="5"><img src="https://bonboru93.github.io/post-images/spark-intro/example.png" alt="" loading="lazy"></figure>
+<p>build artifact</p>
+<figure data-type="image" tabindex="6"><img src="https://bonboru93.github.io/post-images/spark-intro/build.png" alt="" loading="lazy"></figure>
+<p>要注意example包中的maven配置依赖父目录下的配置，单独打开example目录作为工程是不行的。</p>
+<figure data-type="image" tabindex="7"><img src="https://bonboru93.github.io/post-images/spark-intro/depen.png" alt="" loading="lazy"></figure>
+<h1 id="使用spark-submit提交作业">使用spark-submit提交作业</h1>
+<p>编译成jar包之后就可以用spark-submit来提交了，先指定class，然后是jar包，最后是参数：</p>
+<figure data-type="image" tabindex="8"><img src="https://bonboru93.github.io/post-images/spark-intro/submit.png" alt="" loading="lazy"></figure>
+<h1 id="kafka编译问题">kafka编译问题</h1>
+<p>在提交kafka相关的example时发现缺少kafka相关的包，首先尝试将依赖全部打入jar包中。</p>
+<p>注意到在maven配置中，kafka相关的包配置为provided，而实际执行时却报缺少包，判断spark环境中缺少相关的包。</p>
+<p>比如，二次打包过的spark2.2安装包中有kafka-client，而官方的安装包则没有。</p>
+<p>首先尝试将provided标签去掉，无效，jar包大小相同。</p>
+<p>再尝试在maven配置中启用maven assembly插件，配置jar-with-dependency来把所有的依赖一起打包，还是无效。</p>
+<p>再尝试定位报缺少包的代码行，再到maven配置中查找具体的版本号，然后再手动下载jar包放到spark的jars子目录中，解决了两个缺包的问题。</p>
+<p>但是之后又出现了在spark core代码包中的scala代码中报的缺包问题，而不是在我们的example包中，这个没有找到解法，放弃了。</p>
+<h1 id="基于wordcount进行修改">基于wordcount进行修改</h1>
+<p>kafka example的编译问题搞不定，先选择基于wordcount example进行修改，这个example读取的是本地文件，可以正常编译运行，不依赖外部的包。</p>
+<p>同时这样有个好处是，万一需要单节点运行，这套程序也可以部署在单机上，读取本地文件。</p>
+<figure data-type="image" tabindex="9"><img src="https://bonboru93.github.io/post-images/spark-intro/word.png" alt="" loading="lazy"></figure>
+<h1 id="排序问题">排序问题</h1>
+<p>google了一下发现spark似乎没有提供按value排序的方法，找到一个workaround是翻转key和value，然后使用sortbykey排序，之后再翻转回来。</p>
+<figure data-type="image" tabindex="10"><img src="https://bonboru93.github.io/post-images/spark-intro/sort.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://bonboru93.github.io/post-images/spark-intro/sort2.png" alt="" loading="lazy"></figure>
+<h1 id="okhttp使用问题">okhttp使用问题</h1>
+<p>为了使用meta提供的restful API向nginx推送数据，这里选择用okhttp库。</p>
+<p>首先在maven配置中把依赖加上</p>
+<figure data-type="image" tabindex="12"><img src="https://bonboru93.github.io/post-images/spark-intro/okhttp.png" alt="" loading="lazy"></figure>
+<p>这里踩到的坑是，spark中已经带了okhttp的库了，但是是v3版，有些api和官方起手式文档中介绍的v4版不同。</p>
+<p>比如requestbody的create方法的两个参数顺序是反的，这就导致我在编码的时候如果按v3版的顺序写会被idea提示是过时的方法，但是交上去能运行。而按v4版来写，则交上去报错。</p>
+<figure data-type="image" tabindex="13"><img src="https://bonboru93.github.io/post-images/spark-intro/okhttp_bug.png" alt="" loading="lazy"></figure>
+<p>尝试把spark自带的v3版jar包删掉，自行下载v4版替换上去，报错。无奈换成v3版来写。</p>
+<h1 id="okhttp的密码验证问题">okhttp的密码验证问题</h1>
+<p>meta的API是需要basic authentication的，okhttp也自带了相关的代码，参考：https://blog.csdn.net/qq_17775871/article/details/80761961。</p>
+<p>但是这个basic authentication的默认行为是首次裸发请求，然后服务器返回401 Unauthorized，再然后客户端再带上用户名密码重新请求一次，okhttp也是这么处理的，但是写好以后发现报错。</p>
+<p>无奈抓包看看，发现服务器不是返回401，而是403，所以导致了okhttp没有正确处理。</p>
+<figure data-type="image" tabindex="14"><img src="https://bonboru93.github.io/post-images/spark-intro/403.png" alt="" loading="lazy"></figure>
+<p>用postman来请求，然后直接复制生成的包头中的authorization字段到header中，问题解决。</p>
+<figure data-type="image" tabindex="15"><img src="https://bonboru93.github.io/post-images/spark-intro/auth.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="16"><img src="https://bonboru93.github.io/post-images/spark-intro/auth2.png" alt="" loading="lazy"></figure>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://bonboru93.github.io/tag/PmShBVypo/" class="tag">
+                    基术
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://bonboru93.github.io/post/lesslessshen-ru-li-jie-es6greatergreater-du-shu-bi-ji/">
+                  <h3 class="post-title">
+                    《深入理解ES6》读书笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '5fe94521a637b2dc3a91',
+        clientSecret: 'fbf03d0e8e7d3b32b4b919d01f3490572d92a66f',
+        repo: 'bonboru93.github.io',
+        owner: 'bonboru93',
+        admin: ['bonboru93'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
