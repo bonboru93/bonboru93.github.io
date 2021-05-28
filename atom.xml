@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://bonboru93.github.io</id>
     <title>Bonboru93の</title>
-    <updated>2021-05-28T05:45:49.622Z</updated>
+    <updated>2021-05-28T07:30:02.740Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://bonboru93.github.io"/>
     <link rel="self" href="https://bonboru93.github.io/atom.xml"/>
@@ -100,6 +100,7 @@
 <p>难不成又要开始新一轮的折腾？找卖家要bios自己动手改？</p>
 <p>想想就头大，不过还好，又仔细的翻了一遍发现，在video option中先把输出类型从auto改成IGD之后，预分配显存的选项就出来了。</p>
 <p>真TM搞笑，根本就没独显还要来这么一出，不过总算是皆大欢喜。调大到64MB之后，就可以去掉stolenmem的调整，直接用platform-id就能驱动了，型号也不需要仿冒。</p>
+<p>最重要的是，不！黑！屏！了！一切正常～</p>
 <h1 id="wifi的问题">wifi的问题</h1>
 <p>卖家带的网卡是intel的7260ac，印象中之前intel无线网卡在黑果下都是无解的。</p>
 <figure data-type="image" tabindex="22"><img src="https://bonboru93.github.io/post-images/zhaijia-mogai/intel.png" alt="" loading="lazy"></figure>
